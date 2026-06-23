@@ -409,7 +409,7 @@ with col_right:
     st.markdown("<div class='consola-gris' style='padding: 15px; margin-bottom: 15px; background-color: #1e293b;'>", unsafe_allow_html=True)
     st.markdown("<div style='color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>⚙️ CONTROL DE COMBUSTIBLE Y MOTOR DE LA GPU</div>", unsafe_allow_html=True)
     
-    if st.button("🛑 REVENTAR PARADA / DETENER GPU", key="stop_gpu_engine"):
+    if st.button("🛑 DETENER MOTOR GPU", key="stop_gpu_engine"):
         if modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)":
             if st.session_state.step_d == 4: st.session_state.step_d = 5
             else: registrar_error("No se puede detener el motor de la planta sin antes pasar el Switch Externo GPU a la posición OFF.")
