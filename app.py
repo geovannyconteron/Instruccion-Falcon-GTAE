@@ -29,9 +29,6 @@ st.markdown("""
     .seccion-dc { border: 3px solid #22c55e; padding: 15px; border-radius: 6px; background-color: #2d3748; }
     .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
     
-    /* Contenedor hermético para fijar el Display de Aviónica Honeywell EASy */
-    .contenedor-pdu { background-color: #000000; border: 5px solid #4b5563; border-radius: 8px; padding: 20px; min-height: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
-    
     /* Anunciadores de luces de estado */
     .luz-f7x-verde { background-color: #064e3b; color: #00ff66; border: 1px solid #22c55e; font-weight: bold; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
     .luz-f7x-amber { background-color: #78350f; color: #ffb700; border: 1px solid #d97706; font-weight: bold; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
@@ -348,7 +345,7 @@ with col_left:
 with col_right:
     st.markdown("### 📺 Honeywell EASy Display & Emergencias")
     
-    # --- BOTÓN INDEPENDIENTE DE LA RAT (Ubicación real en caja de emergencias) ---
+    # --- BOTÓN INDEPENDIENTE DE LA RAT ---
     st.markdown("<div class='consola-gris' style='padding: 15px; margin-bottom: 15px;'>", unsafe_allow_html=True)
     st.markdown("<div style='color: #f87171; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>EMERGENCY BOX (MANDO SEPARADO)</div>", unsafe_allow_html=True)
     
@@ -368,7 +365,7 @@ with col_right:
     st.markdown(luz_rat, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- PANEL FAKE DE CONTROL DE LA GPU INDUSTRIAL ---
+    # --- PANEL DE CONTROL DE LA GPU ---
     st.markdown("<div class='consola-gris' style='padding: 15px; margin-bottom: 15px; background-color: #1e293b;'>", unsafe_allow_html=True)
     st.markdown("<div style='color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>⚙️ CONTROL DE COMBUSTIBLE Y MOTOR DE LA GPU</div>", unsafe_allow_html=True)
     
@@ -384,10 +381,7 @@ with col_right:
     st.markdown(luz_engine, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- PANTALLA INTELIGENTE CRT (Texto 100% Encapsulado) ---
-    st.markdown("<div class='contenedor-pdu'>", unsafe_allow_html=True)
-    
-    # Configuración de variables eléctricas en tiempo real según el modo activo
+    # --- PANTALLA INTELIGENTE CRT (100% NATIVA EN STREAMLIT) ---
     if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
         v_gpu = "28.0 VDC" if st.session_state.step_e >= 2 else "0.0 VDC"
         v_ess = "28.1 V" if st.session_state.step_e >= 9 else "0.0 V"
@@ -399,7 +393,6 @@ with col_right:
         s_isol = "AISLADO [| AMBER |]" if st.session_state.step_d >= 1 else "CONECTADO [── GREEN ──]"
         pasos_completados = st.session_state.step_d == 7
 
-    # Generación del reporte dinámico del sistema CAS
     if st.session_state.error_activo:
         status_cas = (
             f"🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n\n"
@@ -432,6 +425,5 @@ with col_right:
         f"{status_cas}"
     )
     
+    # st.code bloquea físicamente todo el texto dentro del recuadro negro sin importar la resolución
     st.code(texto_telemetria_definitivo, language="text")
-        
-    st.markdown("</div>", unsafe_allow_html=True)
