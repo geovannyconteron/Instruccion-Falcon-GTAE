@@ -316,7 +316,7 @@ with col_left:
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx2:
-        if st.button("⚡ REGULADOR TENSIÓN (ON/OFF)", key="set_volt"):
+        if st.button("🚪 CERRAR COMPUERTA EXTERIOR", key="set_volt"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 1: st.session_state.step_e = 2
                 else: registrar_error("Ajuste de tensión modificado sin cableado de entrada.")
@@ -353,7 +353,7 @@ with col_left:
                 if st.session_state.step_e == 3: st.session_state.step_e = 4
                 else: registrar_error("Freno de parqueo omitido antes de la entrada de barras.")
             else:
-                registrar_error("El freno de parqueo permanece enganchado en el primer diente por protocolo de seguridad en rampa.")
+                registrar_error("El freno de parqueo permanece ENGANCHADO en el primer diente por protocolo de seguridad en rampa.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
