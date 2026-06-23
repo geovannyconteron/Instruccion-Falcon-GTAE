@@ -298,7 +298,7 @@ with col_left:
 
     # --- CONTROLES AUXILIARES DE COUPLING EN TIERRA ---
     st.markdown("<div class='consola-gris' style='background-color: #2d3748;'><div class='titulo-overhead'>🔧 SECCIÓN DE CONFIGURACIÓN Y ACOPLE DE PLANTA EXTERNA</div>", unsafe_allow_html=True)
-    cx1, cx2, cx3, cx4 = st.columns(4)
+    cx1, cx2, cx3, cx4, cx5 = st.columns(5)
     with cx1:
         if st.button("🔌 ACOPLAR/REMOVER RECEPTÁCULO", key="con_gpu"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
@@ -316,29 +316,28 @@ with col_left:
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx2:
-        if st.button("🚪 CERRAR COMPUERTA EXTERIOR", key="set_volt"):
+        if st.button("⚡ REGULADOR TENSIÓN TIERRA", key="set_volt"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 1: st.session_state.step_e = 2
                 else: registrar_error("Ajuste de tensión modificado sin cableado de entrada.")
             else:
-                if st.session_state.step_d == 6: st.session_state.step_d = 7
-                else: registrar_error("Omitido: Cierre la compuerta física exterior antes de culminar el resguardo.")
+                registrar_error("El potenciómetro de voltaje de rampa no requiere manipulación durante el resguardo térmico.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>28.0 VDC OK</div>" if st.session_state.step_e >= 2 else "<div class='luz-f7x-off'>0.0 VDC</div>"
         else:
-            luz = "<div class='luz-f7x-off'>0.0 VDC (DOOR CLOSED)</div>" if st.session_state.step_d >= 7 else "<div class='luz-f7x-verde'>28.0 VDC OK</div>"
+            luz = "<div class='luz-f7x-verde'>28.0 VDC OK</div>" if st.session_state.step_d < 6 else "<div class='luz-f7x-off'>0.0 VDC</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx3:
-        if st.button("🎛️ SWITCH GROUND POWER GP", key="sw_gpu"):
+        if st.button("🎛️ SWITCH EXTERNO GPU", key="sw_gpu"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 2: st.session_state.step_e = 3
                 else: registrar_error("Switch GPU colocado en ON sin regulación de voltaje nominal.")
             else:
                 if st.session_state.step_d == 3: st.session_state.step_d = 4
-                else: registrar_error("El interruptor de la planta terrestre (Ground Power Switch) debe pasarse a OFF después de liberar la RAT.")
+                else: registrar_error("El interruptor físico exterior de la planta (Ground Power Switch) debe pasarse a OFF después de liberar la RAT.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
@@ -348,19 +347,31 @@ with col_left:
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx4:
-        if st.button("⚙️ CONTROL FRENO DE PARQUEO", key="park_brake"):
+        if st.button("⚙️ CONTROL FRENO PARQUEO", key="park_brake"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 3: st.session_state.step_e = 4
                 else: registrar_error("Freno de parqueo omitido antes de la entrada de barras.")
             else:
-                registrar_error("El freno de parqueo permanece ENGANCHADO en el primer diente por protocolo de seguridad en rampa.")
+                registrar_error("El freno de parqueo permanece ENGANCHADO en rampa por seguridad de calzos.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>ENGANCHADO</div>" if st.session_state.step_e >= 4 else "<div class='luz-f7x-off'>LIBERADO</div>"
         else:
-            luz = "<div class='luz-f7x-verde'>ENGANCHADO (RAMP SECURITY)</div>"
+            luz = "<div class='luz-f7x-verde'>ENGANCHADO (SECURITY)</div>"
         st.markdown(luz, unsafe_allow_html=True)
+
+    with cx5:
+        if st.button("🚪 COMPUERTA EXTERIOR F7X", key="close_door_f7x"):
+            if modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)":
+                if st.session_state.step_d == 6: st.session_state.step_d = 7
+                else: registrar_error("No se puede cerrar la compuerta exterior antes de desconectar físicamente el receptáculo de rampa.")
+            else:
+                registrar_error("La compuerta permanece abierta durante el suministro activo de planta.")
+            st.rerun()
+            
+        luz_door = "<div class='luz-f7x-off'>COMPUERTA CERRADA</div>" if st.session_state.step_d >= 7 else "<div class='luz-f7x-verde'>COMPUERTA ABIERTA</div>"
+        st.markdown(luz_door, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🚨 CORREGIR / REINICIAR EVALUACIÓN", key="reset_sim"):
@@ -394,16 +405,16 @@ with col_right:
     st.markdown(luz_rat, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- PANEL DE CONTROL DE LA GPU ---
+    # --- PANEL DE CONTROL TÉRMICO DE LA GPU ---
     st.markdown("<div class='consola-gris' style='padding: 15px; margin-bottom: 15px; background-color: #1e293b;'>", unsafe_allow_html=True)
     st.markdown("<div style='color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>⚙️ CONTROL DE COMBUSTIBLE Y MOTOR DE LA GPU</div>", unsafe_allow_html=True)
     
     if st.button("🛑 REVENTAR PARADA / DETENER GPU", key="stop_gpu_engine"):
         if modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)":
             if st.session_state.step_d == 4: st.session_state.step_d = 5
-            else: registrar_error("No se puede detener el motor de la planta sin antes pasar el Ground Power Switch a OFF.")
+            else: registrar_error("No se puede detener el motor de la planta sin antes pasar el Switch Externo GPU a la posición OFF.")
         else:
-            registrar_error("Acción inválida en fase de energización.")
+            registrar_error("Acción inválida en fase de suministro continuo.")
         st.rerun()
         
     luz_engine = "<div class='luz-f7x-off'>MOTOR APAGADO</div>" if st.session_state.step_d >= 5 or st.session_state.step_e == 0 else "<div class='luz-f7x-verde'>MOTOR RUNNING</div>"
@@ -427,7 +438,7 @@ with col_right:
         status_cas = (
             f"🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n\n"
             f"  DETALLE DEL FALLO: {st.session_state.msg_error}\n\n"
-            f"  [O.T. INCORRECTA]: El operario militar rompió la secuencia reglamentaria.\n"
+            f"  [O.T. QUEBRADA]: El operario militar rompió la secuencia reglamentaria.\n"
             f"  Presione el botón rojo de corrección para limpiar la red de barras."
         )
     elif pasos_completados:
