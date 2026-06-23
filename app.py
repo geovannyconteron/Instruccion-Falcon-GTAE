@@ -29,21 +29,10 @@ st.markdown("""
     .seccion-dc { border: 3px solid #22c55e; padding: 15px; border-radius: 6px; background-color: #2d3748; }
     .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
     
-    /* Réplica exacta de la Pantalla CRT Honeywell EASy (Totalmente Hermética) */
-    .crt-easy-display { font-family: 'Courier New', Courier, monospace; border-radius: 8px; padding: 25px; min-height: 480px; box-shadow: 0 10px 15px rgba(0,0,0,0.7); }
-    .crt-normal { background-color: #000000; border: 5px solid #2d3748; color: #00ff66; box-shadow: inset 0px 0px 30px rgba(0,255,102,0.15); }
-    .crt-error { background-color: #450a0a; border: 5px solid #ef4444; color: #f87171; box-shadow: inset 0px 0px 40px rgba(239,68,68,0.4); animation: parpadeo 1.5s infinite; }
+    /* Contenedor hermético para fijar el Display de Aviónica Honeywell EASy */
+    .contenedor-pdu { background-color: #000000; border: 5px solid #4b5563; border-radius: 8px; padding: 20px; min-height: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
     
-    .crt-header-line { display: flex; justify-content: space-between; border-bottom: 2px solid #064e3b; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold; }
-    .crt-section-title { font-weight: bold; margin-bottom: 12px; font-size: 0.95rem; }
-    .crt-txt-normal { font-size: 0.95rem; margin-bottom: 6px; font-weight: bold; }
-    
-    /* Caja de Alertas CAS interna */
-    .crt-cas-container { border-top: 1px dashed #064e3b; padding-top: 15px; margin-top: 25px; }
-    .crt-cas-label { font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; border-bottom: 1px solid #78350f; padding-bottom: 4px; }
-    .crt-cas-msg { font-size: 0.88rem; line-height: 1.5; white-space: pre-line; background-color: #050505; border: 1px solid #1f2937; padding: 15px; border-radius: 4px; }
-    
-    /* Anunciadores de luces integrados debajo de los botones */
+    /* Anunciadores de luces de estado */
     .luz-f7x-verde { background-color: #064e3b; color: #00ff66; border: 1px solid #22c55e; font-weight: bold; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
     .luz-f7x-amber { background-color: #78350f; color: #ffb700; border: 1px solid #d97706; font-weight: bold; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
     .luz-f7x-off { background-color: #1a202c; color: #4a5568; border: 1px solid #2d3748; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
@@ -54,20 +43,17 @@ st.title("✈️ Sistema de Instrucción Falcon 7X - GTAE")
 st.subheader("Panel Avanzado ATA 24: Entrenamiento y Evaluación Operativa")
 st.markdown("---")
 
-# Selección del Modo Operativo (Energización o Desenergización)
 modo_operacion = st.radio(
     "📋 SELECCIONE EL PROCEDIMIENTO TÉCNICO A EVALUAR:",
     ["ENERGIZACIÓN COMPLETA (COLD OPERATIONS)", "DESENERGIZACIÓN COMPLETA (SHUTDOWN)"],
     horizontal=True
 )
 
-# Inicialización de estados de simulación
 if "step_e" not in st.session_state: st.session_state.step_e = 0
 if "step_d" not in st.session_state: st.session_state.step_d = 0
 if "error_activo" not in st.session_state: st.session_state.error_activo = False
 if "msg_error" not in st.session_state: st.session_state.msg_error = ""
 
-# Lógica de reinicio automático al cambiar de modo
 if "modo_previo" not in st.session_state:
     st.session_state.modo_previo = modo_operacion
 elif st.session_state.modo_previo != modo_operacion:
@@ -77,12 +63,11 @@ elif st.session_state.modo_previo != modo_operacion:
     st.session_state.msg_error = ""
     st.session_state.modo_previo = modo_operacion
 
-# Función para registrar errores procedimentales
 def registrar_error(mensaje):
     st.session_state.error_activo = True
     st.session_state.msg_error = mensaje
 
-col_left, col_right = st.columns([1.3, 1])
+col_left, col_right = st.columns([1.2, 1])
 
 with col_left:
     st.markdown("<div class='consola-gris'><div class='seccion-dc'><div class='titulo-dc'>⚡ DC SUPPLY PANEL ⚡</div>", unsafe_allow_html=True)
@@ -97,18 +82,16 @@ with col_left:
     with fs[1]:
         if st.button("LH MASTER", key="lhmstr"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-                if st.session_state.step_e == 10: st.session_state.step_e = 11
+                if st.session_state.step_e == 11: st.session_state.step_e = 12
                 else: registrar_error("LH MASTER accionado fuera de secuencia de O.T.")
             else:
-                if st.session_state.step_d == 0: st.session_state.step_d = 1
-                else: registrar_error("Corte de LH MASTER fuera de secuencia.")
+                registrar_error("LH MASTER no requiere ser ciclado en esta fase de desenergización.")
             st.rerun()
         
-        # Luces de estado dinámicas
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-            luz = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.step_e >= 11 else "<div class='luz-f7x-amber'>OFF</div>"
+            luz = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.step_e >= 12 else "<div class='luz-f7x-amber'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-amber'>OFF</div>" if st.session_state.step_d >= 1 else "<div class='luz-f7x-verde'>ON</div>"
+            luz = "<div class='luz-f7x-verde'>ON</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fs[2]:
@@ -117,14 +100,13 @@ with col_left:
                 if st.session_state.step_e == 7: st.session_state.step_e = 8
                 else: registrar_error("LH INIT accionado sin acoplamiento de BUS TIE.")
             else:
-                if st.session_state.step_d == 4: st.session_state.step_d = 5
-                else: registrar_error("Corte de LH INIT fuera de secuencia.")
+                registrar_error("LH INIT permanece enganchado en modo RUN automático durante el corte manual.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-off'>RUN</div>" if st.session_state.step_e >= 8 else "<div class='luz-f7x-amber'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-amber'>OFF</div>" if st.session_state.step_d >= 5 else "<div class='luz-f7x-off'>RUN</div>"
+            luz = "<div class='luz-f7x-off'>RUN</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fs[3]:
@@ -133,14 +115,13 @@ with col_left:
                 if st.session_state.step_e == 6: st.session_state.step_e = 7
                 else: registrar_error("BUS TIE presionado antes de la protección de la RAT.")
             else:
-                if st.session_state.step_d == 3: st.session_state.step_d = 4
-                else: registrar_error("Desacoplamiento de BUS TIE fuera de secuencia.")
+                registrar_error("BUS TIE se autoprotege; corte directo por switch maestro según O.T.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-amber'>TIED</div>" if st.session_state.step_e >= 7 else "<div class='luz-f7x-off'>AUTO</div>"
         else:
-            luz = "<div class='luz-f7x-off'>AUTO</div>" if st.session_state.step_d >= 4 else "<div class='luz-f7x-amber'>TIED</div>"
+            luz = "<div class='luz-f7x-amber'>TIED</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fs[4]:
@@ -149,30 +130,28 @@ with col_left:
                 if st.session_state.step_e == 7: st.session_state.step_e = 8
                 else: registrar_error("RH INIT accionado sin acoplamiento de BUS TIE.")
             else:
-                if st.session_state.step_d == 4: st.session_state.step_d = 5
-                else: registrar_error("Corte de RH INIT fuera de secuencia.")
+                registrar_error("RH INIT permanece enganchado en modo RUN automático durante el corte manual.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-off'>RUN</div>" if st.session_state.step_e >= 8 else "<div class='luz-f7x-amber'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-amber'>OFF</div>" if st.session_state.step_d >= 5 else "<div class='luz-f7x-off'>RUN</div>"
+            luz = "<div class='luz-f7x-off'>RUN</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fs[5]:
         if st.button("RH MASTER", key="rhmstr"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-                if st.session_state.step_e == 10: st.session_state.step_e = 11
+                if st.session_state.step_e == 11: st.session_state.step_e = 12
                 else: registrar_error("RH MASTER accionado fuera de secuencia de O.T.")
             else:
-                if st.session_state.step_d == 0: st.session_state.step_d = 1
-                else: registrar_error("Corte de RH MASTER fuera de secuencia.")
+                registrar_error("RH MASTER no requiere ser ciclado en esta fase de desenergización.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-            luz = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.step_e >= 11 else "<div class='luz-f7x-amber'>OFF</div>"
+            luz = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.step_e >= 12 else "<div class='luz-f7x-amber'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-amber'>OFF</div>" if st.session_state.step_d >= 1 else "<div class='luz-f7x-verde'>ON</div>"
+            luz = "<div class='luz-f7x-verde'>ON</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fs[6]:
@@ -181,14 +160,13 @@ with col_left:
                 if st.session_state.step_e == 9: st.session_state.step_e = 10
                 else: registrar_error("CABIN MASTER accionado sin alimentación principal estable.")
             else:
-                if st.session_state.step_d == 1: st.session_state.step_d = 2
-                else: registrar_error("CABIN MASTER accionado fuera de secuencia de desenergización.")
+                registrar_error("CABIN MASTER se desactiva mediante corte maestro de línea.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-amber'>OFF</div>" if st.session_state.step_e >= 10 else "<div class='luz-f7x-verde'>ON</div>"
         else:
-            luz = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.step_d >= 2 else "<div class='luz-f7x-amber'>OFF</div>"
+            luz = "<div class='luz-f7x-amber'>OFF</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fs[7]:
@@ -197,14 +175,14 @@ with col_left:
                 if st.session_state.step_e == 8: st.session_state.step_e = 9
                 else: registrar_error("EXT POWER presionado sin inicialización previa de barras esenciales.")
             else:
-                if st.session_state.step_d == 2: st.session_state.step_d = 3
-                else: registrar_error("Desconexión de EXT POWER fuera de secuencia.")
+                if st.session_state.step_d == 0: st.session_state.step_d = 1
+                else: registrar_error("EXT POWER debe ser el primer interruptor presionado para iniciar el corte.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>ONLINE</div>" if st.session_state.step_e >= 9 else "<div class='luz-f7x-off'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 3 else "<div class='luz-f7x-verde'>ONLINE</div>"
+            luz = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 1 else "<div class='luz-f7x-verde'>ONLINE</div>"
         st.markdown(luz, unsafe_allow_html=True)
 
     st.markdown("<div style='border-top: 4px solid #ffffff; margin-top: 25px; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
@@ -219,17 +197,16 @@ with col_left:
     with fi[1]:
         if st.button("LH ISOL", key="lhisol"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-                if st.session_state.step_e == 9: st.session_state.step_e = 10
+                if st.session_state.step_e == 10: st.session_state.step_e = 11
                 else: registrar_error("Aislamiento LH accionado antes de establecer la carga comercial.")
             else:
-                if st.session_state.step_d == 1: st.session_state.step_d = 2
-                else: registrar_error("Acoplamiento LH ISOL fuera de secuencia.")
+                registrar_error("El contactor ISOL se drena automáticamente tras remover la excitación principal.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-            luz = "<div class='luz-f7x-off'>TIED</div>" if st.session_state.step_e >= 10 else "<div class='luz-f7x-amber'>ISOL</div>"
+            luz = "<div class='luz-f7x-off'>TIED</div>" if st.session_state.step_e >= 11 else "<div class='luz-f7x-amber'>ISOL</div>"
         else:
-            luz = "<div class='luz-f7x-amber'>ISOL</div>" if st.session_state.step_d >= 2 else "<div class='luz-f7x-off'>TIED</div>"
+            luz = "<div class='luz-f7x-off'>TIED</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fi[2]:
@@ -238,14 +215,14 @@ with col_left:
                 if st.session_state.step_e == 4: st.session_state.step_e = 5
                 else: registrar_error("BAT 1 accionada sin parámetros estables en la planta externa.")
             else:
-                if st.session_state.step_d == 6: st.session_state.step_d = 7
-                else: registrar_error("Corte de BAT 1 fuera de secuencia final.")
+                if st.session_state.step_d == 1: st.session_state.step_d = 2
+                else: registrar_error("BAT 1 debe cortarse a la posición OFF inmediatamente después del EXT POWER.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>AUTO</div>" if st.session_state.step_e >= 5 else "<div class='luz-f7x-off'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 7 else "<div class='luz-f7x-verde'>AUTO</div>"
+            luz = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 2 else "<div class='luz-f7x-verde'>AUTO</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fi[3]:
@@ -254,14 +231,14 @@ with col_left:
                 if st.session_state.step_e == 4: st.session_state.step_e = 5
                 else: registrar_error("BAT 2 accionada sin parámetros estables en la planta externa.")
             else:
-                if st.session_state.step_d == 6: st.session_state.step_d = 7
-                else: registrar_error("Corte de BAT 2 fuera de secuencia final.")
+                if st.session_state.step_d == 1: st.session_state.step_d = 2
+                else: registrar_error("BAT 2 debe cortarse a la posición OFF inmediatamente después del EXT POWER.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>AUTO</div>" if st.session_state.step_e >= 5 else "<div class='luz-f7x-off'>OFF</div>"
         else:
-            luz = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 7 else "<div class='luz-f7x-verde'>AUTO</div>"
+            luz = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 2 else "<div class='luz-f7x-verde'>AUTO</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fi[4]:
@@ -271,17 +248,16 @@ with col_left:
     with fi[5]:
         if st.button("RH ISOL", key="rhisol"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-                if st.session_state.step_e == 9: st.session_state.step_e = 10
+                if st.session_state.step_e == 10: st.session_state.step_e = 11
                 else: registrar_error("Aislamiento RH accionado antes de establecer la carga comercial.")
             else:
-                if st.session_state.step_d == 1: st.session_state.step_d = 2
-                else: registrar_error("Acoplamiento RH ISOL fuera de secuencia.")
+                registrar_error("El contactor ISOL se drena automáticamente tras remover la excitación principal.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-            luz = "<div class='luz-f7x-off'>TIED</div>" if st.session_state.step_e >= 10 else "<div class='luz-f7x-amber'>ISOL</div>"
+            luz = "<div class='luz-f7x-off'>TIED</div>" if st.session_state.step_e >= 11 else "<div class='luz-f7x-amber'>ISOL</div>"
         else:
-            luz = "<div class='luz-f7x-amber'>ISOL</div>" if st.session_state.step_d >= 2 else "<div class='luz-f7x-off'>TIED</div>"
+            luz = "<div class='luz-f7x-off'>TIED</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with fi[6]:
@@ -298,67 +274,66 @@ with col_left:
     st.markdown("<div class='consola-gris' style='background-color: #2d3748;'><div class='titulo-overhead'>🔧 SECCIÓN DE CONFIGURACIÓN Y ACOPLE DE PLANTA EXTERNA</div>", unsafe_allow_html=True)
     cx1, cx2, cx3, cx4 = st.columns(4)
     with cx1:
-        if st.button("🔌 ACOPLAR RECEPTÁCULO GPU", key="con_gpu"):
+        if st.button("🔌 ACOPLAR/REMOVER RECEPTÁCULO", key="con_gpu"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 0: st.session_state.step_e = 1
                 else: registrar_error("Planta externa acoplada fuera de secuencia.")
             else:
-                if st.session_state.step_d == 8: st.session_state.step_d = 9
-                else: registrar_error("Desconexión prematura de la línea física de tierra.")
+                if st.session_state.step_d == 5: st.session_state.step_d = 6
+                else: registrar_error("Desconexión física del receptáculo ejecutada antes de apagar la planta.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>CONECTADO</div>" if st.session_state.step_e >= 1 else "<div class='luz-f7x-off'>DESCONECTADO</div>"
         else:
-            luz = "<div class='luz-f7x-off'>DESCONECTADO</div>" if st.session_state.step_d >= 9 else "<div class='luz-f7x-verde'>CONECTADO</div>"
+            luz = "<div class='luz-f7x-off'>DESCONECTADO</div>" if st.session_state.step_d >= 6 else "<div class='luz-f7x-verde'>CONECTADO</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx2:
-        if st.button("⚡ REGULAR TENSIÓN A 28.0 VDC", key="set_volt"):
+        if st.button("⚡ REGULADOR TENSIÓN (ON/OFF)", key="set_volt"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 1: st.session_state.step_e = 2
                 else: registrar_error("Ajuste de tensión modificado sin cableado de entrada.")
             else:
-                if st.session_state.step_d == 8: st.session_state.step_d = 9
-                else: registrar_error("Modificación de tensión fuera de secuencia final.")
+                if st.session_state.step_d == 6: st.session_state.step_d = 7
+                else: registrar_error("Omitido: Cierre la compuerta física exterior antes de culminar el resguardo.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>28.0 VDC OK</div>" if st.session_state.step_e >= 2 else "<div class='luz-f7x-off'>0.0 VDC</div>"
         else:
-            luz = "<div class='luz-f7x-off'>0.0 VDC</div>" if st.session_state.step_d >= 9 else "<div class='luz-f7x-verde'>28.0 VDC OK</div>"
+            luz = "<div class='luz-f7x-off'>0.0 VDC (DOOR CLOSED)</div>" if st.session_state.step_d >= 7 else "<div class='luz-f7x-verde'>28.0 VDC OK</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx3:
-        if st.button("🎛️ CONTROLADOR SWITCH GPU TO ON", key="sw_gpu"):
+        if st.button("🎛️ SWITCH GROUND POWER GP", key="sw_gpu"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 2: st.session_state.step_e = 3
                 else: registrar_error("Switch GPU colocado en ON sin regulación de voltaje nominal.")
             else:
-                if st.session_state.step_d == 7: st.session_state.step_d = 8
-                else: registrar_error("Corte de Switch de control de planta fuera de orden.")
+                if st.session_state.step_d == 3: st.session_state.step_d = 4
+                else: registrar_error("El interruptor de la planta terrestre (Ground Power Switch) debe pasarse a OFF después de liberar la RAT.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>LÍNEA ONLINE</div>" if st.session_state.step_e >= 3 else "<div class='luz-f7x-off'>LÍNEA OFF</div>"
         else:
-            luz = "<div class='luz-f7x-off'>LÍNEA OFF</div>" if st.session_state.step_d >= 8 else "<div class='luz-f7x-verde'>LÍNEA ONLINE</div>"
+            luz = "<div class='luz-f7x-off'>LÍNEA OFF</div>" if st.session_state.step_d >= 4 else "<div class='luz-f7x-verde'>LÍNEA ONLINE</div>"
         st.markdown(luz, unsafe_allow_html=True)
         
     with cx4:
-        if st.button("⚙️ DIENTE FRENO DE PARQUEO", key="park_brake"):
+        if st.button("⚙️ CONTROL FRENO DE PARQUEO", key="park_brake"):
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 3: st.session_state.step_e = 4
                 else: registrar_error("Freno de parqueo omitido antes de la entrada de barras.")
             else:
-                if st.session_state.step_d == 7: st.session_state.step_d = 8
-                else: registrar_error("Liberación del freno de seguridad fuera de secuencia.")
+                registrar_error("El freno de parqueo permanece enganchado en el primer diente por protocolo de seguridad en rampa.")
             st.rerun()
             
         if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
             luz = "<div class='luz-f7x-verde'>ENGANCHADO</div>" if st.session_state.step_e >= 4 else "<div class='luz-f7x-off'>LIBERADO</div>"
         else:
-            luz = "<div class='luz-f7x-off'>LIBERADO</div>" if st.session_state.step_d >= 8 else "<div class='luz-f7x-verde'>ENGANCHADO</div>"
+            luz = "<div class='luz-f7x-verde'>ENGANCHADO (RAMP SECURITY)</div>"
         st.markdown(luz, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -382,71 +357,81 @@ with col_right:
             if st.session_state.step_e == 5: st.session_state.step_e = 6
             else: registrar_error("RAT AUTO accionada fuera del orden estipulado de O.T.")
         else:
-            if st.session_state.step_d == 5: st.session_state.step_d = 6
-            else: registrar_error("Corte de protección de RAT fuera de secuencia.")
+            if st.session_state.step_d == 2: st.session_state.step_d = 3
+            else: registrar_error("La protección RAT AUTO debe ser liberada a su posición normal inmediatamente después de pasar las baterías a OFF.")
         st.rerun()
         
     if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
         luz_rat = "<div class='luz-f7x-amber'>INHIBIT</div>" if st.session_state.step_e >= 6 else "<div class='luz-f7x-off'>OFF</div>"
     else:
-        luz_rat = "<div class='luz-f7x-off'>OFF</div>" if st.session_state.step_d >= 6 else "<div class='luz-f7x-amber'>INHIBIT</div>"
+        luz_rat = "<div class='luz-f7x-off'>OFF (NORMAL POSITION)</div>" if st.session_state.step_d >= 3 else "<div class='luz-f7x-amber'>INHIBIT</div>"
     st.markdown(luz_rat, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- PANTALLA INTELIGENTE CRT ---
-    estado_pantalla = "crt-error" if st.session_state.error_activo else "crt-normal"
-    st.markdown(f"<div class='crt-easy-display {estado_pantalla}'>", unsafe_allow_html=True)
+    # --- PANEL FAKE DE CONTROL DE LA GPU INDUSTRIAL ---
+    st.markdown("<div class='consola-gris' style='padding: 15px; margin-bottom: 15px; background-color: #1e293b;'>", unsafe_allow_html=True)
+    st.markdown("<div style='color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>⚙️ CONTROL DE COMBUSTIBLE Y MOTOR DE LA GPU</div>", unsafe_allow_html=True)
     
-    # Configuración de variables eléctricas en tiempo real
+    if st.button("🛑 REVENTAR PARADA / DETENER GPU", key="stop_gpu_engine"):
+        if modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)":
+            if st.session_state.step_d == 4: st.session_state.step_d = 5
+            else: registrar_error("No se puede detener el motor de la planta sin antes pasar el Ground Power Switch a OFF.")
+        else:
+            registrar_error("Acción inválida en fase de energización.")
+        st.rerun()
+        
+    luz_engine = "<div class='luz-f7x-off'>MOTOR APAGADO</div>" if st.session_state.step_d >= 5 or st.session_state.step_e == 0 else "<div class='luz-f7x-verde'>MOTOR RUNNING</div>"
+    st.markdown(luz_engine, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- PANTALLA INTELIGENTE CRT (Texto 100% Encapsulado) ---
+    st.markdown("<div class='contenedor-pdu'>", unsafe_allow_html=True)
+    
+    # Configuración de variables eléctricas en tiempo real según el modo activo
     if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
         v_gpu = "28.0 VDC" if st.session_state.step_e >= 2 else "0.0 VDC"
         v_ess = "28.1 V" if st.session_state.step_e >= 9 else "0.0 V"
-        s_isol = "CONECTADO [── GREEN ──]" if st.session_state.step_e >= 10 else "AISLADO [| AMBER |]"
+        s_isol = "CONECTADO [── GREEN ──]" if st.session_state.step_e >= 11 else "AISLADO [| AMBER |]"
         pasos_completados = st.session_state.step_e == 12
     else:
-        v_gpu = "0.0 VDC" if st.session_state.step_d >= 9 else "28.0 VDC"
-        v_ess = "0.0 V" if st.session_state.step_d >= 3 else "28.1 V"
-        s_isol = "AISLADO [| AMBER |]" if st.session_state.step_d >= 2 else "CONECTADO [── GREEN ──]"
-        pasos_completados = st.session_state.step_d == 9
+        v_gpu = "0.0 VDC" if st.session_state.step_d >= 5 else "28.0 VDC"
+        v_ess = "0.0 V" if st.session_state.step_d >= 1 else "28.1 V"
+        s_isol = "AISLADO [| AMBER |]" if st.session_state.step_d >= 1 else "CONECTADO [── GREEN ──]"
+        pasos_completados = st.session_state.step_d == 7
 
-    # Renderizado interno de aviónica
-    st.markdown(f"""
-        <div class='crt-header-line'>
-            <span>SISTEMA: HONEYWELL EASY PDU</span>
-            <span>MODO: MDU ELEC SYNOPTIC</span>
-        </div>
-        <div class='crt-section-title'>⚙️ LÍNEAS DE FLUJO DE CORRIENTE CONTINUA (DC)</div>
-        <div class='crt-txt-normal'>• ENTRADA FEEDER GPU TIERRA : {v_gpu}</div>
-        <div class='crt-txt-normal'>• LH ESSENTIAL BUS LINE     : {v_ess}</div>
-        <div class='crt-txt-normal'>• RH ESSENTIAL BUS LINE     : {v_ess}</div>
-        <div class='crt-txt-normal'>• CONTACTOR DE AISLAMIENTO  : {s_isol}</div>
-        
-        <div class='crt-cas-container'>
-            <div class='crt-cas-label'>🔔 CREW ALERTING SYSTEM (CAS) STATUS</div>
-    """, unsafe_allow_html=True)
-    
-    # Lógica de mensajes para el display de aviónica (Sin revelar los siguientes pasos)
+    # Generación del reporte dinámico del sistema CAS
     if st.session_state.error_activo:
-        st.markdown(f"""
-            <div class='crt-cas-msg' style='color: #f87171; border: 2px solid #ef4444; background-color: #2d0000;'>
-                🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n
-                {st.session_state.msg_error}\n\n
-                [PRESIONE EL BOTÓN ROJO DE ABAJO PARA REINICIAR EL PASO]
-            </div>
-        """, unsafe_allow_html=True)
+        status_cas = (
+            f"🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n\n"
+            f" DETALLE DEL FALLO: {st.session_state.msg_error}\n\n"
+            f" [O.T. QUEBRADA]: El operario militar rompió el orden reglamentario.\n"
+            f" Presione el botón rojo de reajuste para limpiar las barras de control."
+        )
     elif pasos_completados:
-        st.markdown(f"""
-            <div class='crt-cas-msg' style='color: #00ff66; border: 2px solid #22c55e;'>
-                ⚡ SECUENCIA CONCLUIDA CON ÉXITO\n
-                El procedimiento de {'energización' if modo_operacion.startswith('ENERG') else 'desenergización'} cumple al 100% las normativas técnicas del GTAE.
-            </div>
-        """, unsafe_allow_html=True)
+        status_cas = (
+            f"⚡ SYSTEMS STATUS: SECUENCIA CONCLUIDA CON ÉXITO\n\n"
+            f" El procedimiento de {'energización' if modo_operacion.startswith('ENERG') else 'desenergización'} cumple al 100% las normativas técnicas e instrucciones del manual Dassault para el Grupo de Transporte Aéreo Especial."
+        )
     else:
-        st.markdown(f"""
-            <div class='crt-cas-msg' style='color: #ffb700;'>
-                📲 MODO EVALUACIÓN ACTIVO\n
-                Ejecute la secuencia en los interruptores físicos siguiendo el orden establecido en su Orden Técnica (O.T.). La pantalla registrará la telemetría automáticamente.
-            </div>
-        """, unsafe_allow_html=True)
+        status_cas = (
+            f"📲 MODO EVALUACIÓN COMPLETA ACTIVO\n\n"
+            f" Las instrucciones automatizadas de ayuda visual han sido removidas de la pantalla CRT.\n"
+            f" El operador militar debe accionar la secuencia de interruptores físicos guiándose estrictamente por su Orden Técnica (O.T.)."
+        )
+
+    texto_telemetria_definitivo = (
+        f"SISTEMA: HONEYWELL EASY PDU 1  |  MODO: EVALUACIÓN DE CABINA COMPLETA\n"
+        f"----------------------------------------------------------------------\n\n"
+        f"⚙️ TELEMETRÍA DE RED DE BARRAS EN TIEMPO REAL (ATA 24):\n\n"
+        f" • FEEDER DE ENTRADA GPU TIERRA : {v_gpu}\n"
+        f" • LH ESSENTIAL BUS RED LINE    : {v_ess}\n"
+        f" • RH ESSENTIAL BUS RED LINE    : {v_ess}\n"
+        f" • CONTACTOR DE AISLAMIENTO ISOL: {s_isol}\n\n"
+        f"----------------------------------------------------------------------\n"
+        f"🔔 CREW ALERTING SYSTEM (CAS) & MONITOR DE EVALUACIÓN:\n\n"
+        f"{status_cas}"
+    )
+    
+    st.code(texto_telemetria_definitivo, language="text")
         
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
