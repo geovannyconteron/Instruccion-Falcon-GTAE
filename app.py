@@ -29,6 +29,35 @@ st.markdown("""
     .seccion-dc { border: 3px solid #22c55e; padding: 15px; border-radius: 6px; background-color: #2d3748; }
     .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
     
+    /* Réplica exacta y hermética de la Pantalla CRT Honeywell EASy */
+    .crt-easy-display { 
+        font-family: 'Courier New', Courier, monospace; 
+        border-radius: 8px; 
+        padding: 25px; 
+        min-height: 520px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.7); 
+        white-space: pre-wrap;
+    }
+    .crt-normal { 
+        background-color: #000000 !important; 
+        border: 5px solid #374151 !important; 
+        color: #00ff66 !important; 
+    }
+    .crt-error { 
+        background-color: #7f1d1d !important; 
+        border: 5px solid #ef4444 !important; 
+        color: #fca5a5 !important;
+        animation: alarma-parpadeo 1s infinite alternate;
+    }
+    
+    @keyframes alarma-parpadeo {
+        0% { background-color: #7f1d1d; border-color: #ef4444; }
+        100% { background-color: #b91c1c; border-color: #f87171; }
+    }
+    
+    .crt-header { display: flex; justify-content: space-between; border-bottom: 2px solid #064e3b; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold; }
+    .crt-error .crt-header { border-bottom: 2px solid #b91c1c; color: #ffffff; }
+    
     /* Anunciadores de luces de estado */
     .luz-f7x-verde { background-color: #064e3b; color: #00ff66; border: 1px solid #22c55e; font-weight: bold; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
     .luz-f7x-amber { background-color: #78350f; color: #ffb700; border: 1px solid #d97706; font-weight: bold; text-align: center; border-radius: 2px; font-size: 0.75rem; padding: 4px; margin-top: 3px; }
@@ -37,7 +66,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("✈️ Sistema de Instrucción Falcon 7X - GTAE")
-st.subheader("Panel Avanzado ATA 24: Entrenamiento y Evaluación Operativa")
+st.subheader("Panel Advanced ATA 24: Entrenamiento y Evaluación Operativa")
 st.markdown("---")
 
 modo_operacion = st.radio(
@@ -381,7 +410,7 @@ with col_right:
     st.markdown(luz_engine, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- PANTALLA INTELIGENTE CRT (100% NATIVA EN STREAMLIT) ---
+    # --- CONFIGURACIÓN DE TELEMETRÍA ---
     if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
         v_gpu = "28.0 VDC" if st.session_state.step_e >= 2 else "0.0 VDC"
         v_ess = "28.1 V" if st.session_state.step_e >= 9 else "0.0 V"
@@ -394,36 +423,47 @@ with col_right:
         pasos_completados = st.session_state.step_d == 7
 
     if st.session_state.error_activo:
+        clase_pantalla = "crt-error"
         status_cas = (
             f"🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n\n"
-            f" DETALLE DEL FALLO: {st.session_state.msg_error}\n\n"
-            f" [O.T. QUEBRADA]: El operario militar rompió el orden reglamentario.\n"
-            f" Presione el botón rojo de reajuste para limpiar las barras de control."
+            f"  DETALLE DEL FALLO: {st.session_state.msg_error}\n\n"
+            f"  [O.T. INCORRECTA]: El operario militar rompió la secuencia reglamentaria.\n"
+            f"  Presione el botón rojo de corrección para limpiar la red de barras."
         )
     elif pasos_completados:
+        clase_pantalla = "crt-normal"
         status_cas = (
             f"⚡ SYSTEMS STATUS: SECUENCIA CONCLUIDA CON ÉXITO\n\n"
-            f" El procedimiento de {'energización' if modo_operacion.startswith('ENERG') else 'desenergización'} cumple al 100% las normativas técnicas e instrucciones del manual Dassault para el Grupo de Transporte Aéreo Especial."
+            f"  El procedimiento cumple al 100% las normativas técnicas e instrucciones\n"
+            f"  del manual Dassault para el Grupo de Transporte Aéreo Especial."
         )
     else:
+        clase_pantalla = "crt-normal"
         status_cas = (
             f"📲 MODO EVALUACIÓN COMPLETA ACTIVO\n\n"
-            f" Las instrucciones automatizadas de ayuda visual han sido removidas de la pantalla CRT.\n"
-            f" El operador militar debe accionar la secuencia de interruptores físicos guiándose estrictamente por su Orden Técnica (O.T.)."
+            f"  Las instrucciones visuales automáticas han sido removidas de la pantalla CRT.\n"
+            f"  El operador militar debe accionar los interruptores guiándose por su O.T."
         )
 
-    texto_telemetria_definitivo = (
-        f"SISTEMA: HONEYWELL EASY PDU 1  |  MODO: EVALUACIÓN DE CABINA COMPLETA\n"
-        f"----------------------------------------------------------------------\n\n"
-        f"⚙️ TELEMETRÍA DE RED DE BARRAS EN TIEMPO REAL (ATA 24):\n\n"
-        f" • FEEDER DE ENTRADA GPU TIERRA : {v_gpu}\n"
-        f" • LH ESSENTIAL BUS RED LINE    : {v_ess}\n"
-        f" • RH ESSENTIAL BUS RED LINE    : {v_ess}\n"
-        f" • CONTACTOR DE AISLAMIENTO ISOL: {s_isol}\n\n"
-        f"----------------------------------------------------------------------\n"
-        f"🔔 CREW ALERTING SYSTEM (CAS) & MONITOR DE EVALUACIÓN:\n\n"
-        f"{status_cas}"
-    )
+    # --- PANTALLA CRT HERMÉTICA INTEGRADA ---
+    pantalla_html = f"""
+    <div class='crt-easy-display {clase_pantalla}'>
+<div class='crt-header'>
+<span>SISTEMA: HONEYWELL EASY PDU 1</span>
+<span>MODO: EVALUACIÓN DE CABINA COMPLETA</span>
+</div>
+⚙️ TELEMETRÍA DE RED DE BARRAS EN TIEMPO REAL (ATA 24):
+
+ • FEEDER DE ENTRADA GPU TIERRA : {v_gpu}
+ • LH ESSENTIAL BUS RED LINE    : {v_ess}
+ • RH ESSENTIAL BUS RED LINE    : {v_ess}
+ • CONTACTOR DE AISLAMIENTO ISOL: {s_isol}
+
+----------------------------------------------------------------------
+🔔 CREW ALERTING SYSTEM (CAS) & MONITOR DE EVALUACIÓN:
+
+{status_cas}
+    </div>
+    """
     
-    # st.code bloquea físicamente todo el texto dentro del recuadro negro sin importar la resolución
-    st.code(texto_telemetria_definitivo, language="text")
+    st.markdown(pantalla_html, unsafe_allow_html=True)
