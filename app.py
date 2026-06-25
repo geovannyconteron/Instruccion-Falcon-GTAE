@@ -28,6 +28,7 @@ st.markdown("""
     /* Consolas fijas grises */
     .consola-gris { background-color: #4a5568; border: 4px solid #2d3748; padding: 25px; border-radius: 8px; margin-bottom: 15px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
     .seccion-dc { border: 3px solid #22c55e; padding: 15px; border-radius: 6px; background-color: #2d3748; }
+    .seccion-fuel { border: 3px solid #38bdf8; padding: 15px; border-radius: 6px; background-color: #2d3748; }
     .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
     
     /* Pantalla CRT Honeywell EASy */
@@ -78,7 +79,6 @@ if not st.session_state.autenticado:
             </div>
         """, unsafe_allow_html=True)
         
-        # Imagen representativa de portada (puedes cambiar la URL por una foto específica si lo deseas)
         st.image("https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1200&auto=format&fit=crop", 
                  caption="Grupo de Transporte Aéreo Especial - Fuerza Aérea Ecuatoriana", use_container_width=True)
         
@@ -90,7 +90,6 @@ if not st.session_state.autenticado:
             boton_login = st.form_submit_button("INGRESAR AL ENTORNO TÁCTICO")
             
             if boton_login:
-                # Credenciales operativas básicas (Cámbialas a tu gusto)
                 if usuario == "gtae" and contrasena == "7X2026":
                     st.session_state.autenticado = True
                     st.rerun()
@@ -99,10 +98,8 @@ if not st.session_state.autenticado:
     st.stop()
 
 # ==========================================
-# ENTORNO PROTEGIDO - NAVEGACIÓN MÚLTIPLES MÓDULOS
+# ENTORNO PROTEGIDO - NAVEGACIÓN
 # ==========================================
-
-# Botón de cierre de sesión en la barra lateral
 with st.sidebar:
     st.markdown("### 👤 OPERADOR ACTIVO")
     st.markdown("**Unidad:** Grupo de Transporte Aéreo Especial")
@@ -111,12 +108,20 @@ with st.sidebar:
         st.rerun()
     st.markdown("---")
     
-    # Selector de módulos de entrenamiento
     st.markdown("### 📂 MÓDULOS DE ENTRENAMIENTO")
     modulo_seleccionado = st.radio(
         "Seleccione el sistema a evaluar:",
         ["MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)", "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)"]
     )
+
+# Inicializar estados de combustible
+if "pump_1a" not in st.session_state: st.session_state.pump_1a = False
+if "pump_1b" not in st.session_state: st.session_state.pump_1b = False
+if "xfeed" not in st.session_state: st.session_state.xfeed = False
+if "pump_3a" not in st.session_state: st.session_state.pump_3a = False
+if "pump_3b" not in st.session_state: st.session_state.pump_3b = False
+if "fuel_error" not in st.session_state: st.session_state.fuel_error = False
+if "fuel_msg" not in st.session_state: st.session_state.fuel_msg = ""
 
 # ------------------------------------------------------------------
 # DESARROLLO DEL MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)
@@ -235,9 +240,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
         st.markdown("<div style='border-top: 4px solid #ffffff; margin-top: 25px; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
         fi = st.columns(8)
-        with fi[0]:
-            st.button("GEN 1", disabled=True, key="gen1")
-            st.markdown("<div class='luz-f7x-off'>OFF</div>", unsafe_allow_html=True)
+        with fi[0]: st.button("GEN 1", disabled=True, key="gen1"); st.markdown("<div class='luz-f7x-off'>OFF</div>", unsafe_allow_html=True)
         with fi[1]:
             if st.button("LH ISOL", key="lhisol"):
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
@@ -269,9 +272,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
                 st.rerun()
             luz = "<div class='luz-f7x-verde'>AUTO</div>" if (modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.step_e >= 5) or (modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" and st.session_state.step_d < 2) else "<div class='luz-f7x-off'>OFF</div>"
             st.markdown(luz, unsafe_allow_html=True)
-        with fi[4]:
-            st.button("RAT RESET", disabled=True, key="rat_res")
-            st.markdown("<div class='luz-f7x-off'>OFF</div>", unsafe_allow_html=True)
+        with fi[4]: st.button("RAT RESET", disabled=True, key="rat_res"); st.markdown("<div class='luz-f7x-off'>OFF</div>", unsafe_allow_html=True)
         with fi[5]:
             if st.button("RH ISOL", key="rhisol"):
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
@@ -419,29 +420,100 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
 # ------------------------------------------------------------------
 elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
     st.title("⛽ Módulo II: Gestión de Combustible ATA 28")
-    st.subheader("Simulación de Tanques de la Aeronave y Panel de Control de Válvulas / Bombas")
+    st.subheader("Simulación de Distribución, Válvulas Inter-Crossfeed y Presión de Tanques")
     st.markdown("---")
     
-    st.warning("🚧 MÓDULO EN DESARROLLO ARQUITECTÓNICO 🚧")
-    st.markdown("""
-        ### Próximos pasos operativos para este panel:
-        Este espacio está listo para mapear la cabina de combustible del Falcon 7X. Aquí podremos simular:
-        * **Tanques de Combustible:** Tanque Izquierdo (LH), Tanque Central (Center) y Tanque Derecho (RH).
-        * **Interconexión de Barras e Inter-Crossfeed:** Válvulas de transferencia Cruzada y alimentación cruzada.
-        * **Boost Pumps:** Activación y control de las bombas principales y auxiliares de inyección a los motores.
-        * **Monitoreo de Telemetría (EASy Display):** Cantidad de combustible en libras/kilogramos, estado de flujo y presiones de línea en tiempo real.
-    """)
+    col_f1, col_f2 = st.columns([1.3, 1])
     
-    # Contenedor gráfico simulado para el panel de combustible
-    st.markdown("<div class='consola-gris'><div class='titulo-dc'>⛽ REPLICA PANEL DE COMBUSTIBLE OVERHEAD (PRÓXIMAMENTE)</div>", unsafe_allow_html=True)
-    c_fuel = st.columns(3)
-    with c_fuel[0]:
-        st.button("TANK LH PUMPS", disabled=True)
-        st.markdown("<div class='luz-f7x-off'>INOP</div>", unsafe_allow_html=True)
-    with c_fuel[1]:
-        st.button("X-FEED VALVE", disabled=True)
-        st.markdown("<div class='luz-f7x-off'>INOP</div>", unsafe_allow_html=True)
-    with c_fuel[2]:
-        st.button("TANK RH PUMPS", disabled=True)
-        st.markdown("<div class='luz-f7x-off'>INOP</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    with col_f1:
+        st.markdown("<div class='consola-gris'><div class='seccion-fuel'><div class='titulo-dc'>⛽ REPLICA FUEL CONTROL OVERHEAD PANEL</div>", unsafe_allow_html=True)
+        
+        # Estructura del panel basada en la imagen real enviada
+        f_cols = st.columns(5)
+        
+        with f_cols[0]:
+            if st.button("PUMP 1A", key="p1a"):
+                st.session_state.pump_1a = not st.session_state.pump_1a
+                st.rerun()
+            l_p1a = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.pump_1a else "<div class='luz-f7x-off'>OFF</div>"
+            st.markdown(l_p1a, unsafe_allow_html=True)
+            
+            if st.button("PUMP 1B", key="p1b"):
+                st.session_state.pump_1b = not st.session_state.pump_1b
+                st.rerun()
+            l_p1b = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.pump_1b else "<div class='luz-f7x-off'>OFF</div>"
+            st.markdown(l_p1b, unsafe_allow_html=True)
+            
+        with f_cols[1]:
+            st.button("LH-CTR XFR", disabled=True)
+            st.markdown("<div class='luz-f7x-off'>AUTO</div>", unsafe_allow_html=True)
+            
+        with f_cols[2]:
+            st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;'>X-FEED</div>", unsafe_allow_html=True)
+            if st.button("VALVE", key="xf"):
+                st.session_state.xfeed = not st.session_state.xfeed
+                st.rerun()
+            l_xf = "<div class='luz-f7x-amber'>OPEN</div>" if st.session_state.xfeed else "<div class='luz-f7x-off'>CLOSED</div>"
+            st.markdown(l_xf, unsafe_allow_html=True)
+            
+        with f_cols[3]:
+            st.button("CTR-RH XFR", disabled=True)
+            st.markdown("<div class='luz-f7x-off'>AUTO</div>", unsafe_allow_html=True)
+            
+        with f_cols[4]:
+            if st.button("PUMP 3A", key="p3a"):
+                st.session_state.pump_3a = not st.session_state.pump_3a
+                st.rerun()
+            l_p3a = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.pump_3a else "<div class='luz-f7x-off'>OFF</div>"
+            st.markdown(l_p3a, unsafe_allow_html=True)
+            
+            if st.button("PUMP 3B", key="p3b"):
+                st.session_state.pump_3b = not st.session_state.pump_3b
+                st.rerun()
+            l_p3b = "<div class='luz-f7x-verde'>ON</div>" if st.session_state.pump_3b else "<div class='luz-f7x-off'>OFF</div>"
+            st.markdown(l_p3b, unsafe_allow_html=True)
+            
+        st.markdown("</div></div>", unsafe_allow_html=True)
+        
+        # Evaluación de lógica operativa para alertas CAS de combustible
+        if not st.session_state.pump_1a and not st.session_state.pump_1b and not st.session_state.xfeed:
+            st.session_state.fuel_error = True
+            st.session_state.fuel_msg = "🚨 CAS ALERT: LH FUEL PRESS LOW\n  Falta de presión en línea de alimentación al Motor 1."
+        elif st.session_state.xfeed and (st.session_state.pump_1a or st.session_state.pump_1b) and (st.session_state.pump_3a or st.session_state.pump_3b):
+            st.session_state.fuel_error = True
+            st.session_state.fuel_msg = "⚠️ CAS ADVISORY: X-FEED VALVE OPEN\n  Válvula cruzada abierta con ambas líneas presurizadas."
+        else:
+            st.session_state.fuel_error = False
+            st.session_state.fuel_msg = "🟢 FUEL SYSTEM STANDBY / NOMINAL\n  Flujo de presión estable para alimentación de plantas motrices."
+
+    with col_f2:
+        st.markdown("### 📺 Honeywell EASy - Fuel Synoptic Display")
+        
+        clase_f_crt = "crt-error" if st.session_state.fuel_error and "🚨" in st.session_state.fuel_msg else "crt-normal"
+        
+        # Valores simulados de cantidad de combustible (Lbs) basados en el estado de bombas
+        p_lh = "PSI: 24 (OK)" if (st.session_state.pump_1a or st.session_state.pump_1b or st.session_state.xfeed) else "PSI: 0 (LOW)"
+        p_rh = "PSI: 24 (OK)" if (st.session_state.pump_3a or st.session_state.pump_3b or st.session_state.xfeed) else "PSI: 0 (LOW)"
+        
+        crt_fuel_html = f"""
+        <div class='crt-easy-display {clase_f_crt}'>
+<div class='crt-header'><span>SISTEMA: HONEYWELL EASY FUEL SYNOPTIC</span><span>ATA: 28</span></div>
+📊 MONITOREO DE CANTIDAD Y PRESIÓN DE TANQUES:
+
+ • TANK 1 (LH) QUANTITY : 4,200 Lbs   [ {p_lh} ]
+ • TANK 2 (CTR) QUANTITY: 6,500 Lbs   [ AUTO STATUS ]
+ • TANK 3 (RH) QUANTITY : 4,200 Lbs   [ {p_rh} ]
+
+ ─────────────── FLUJO DE LÍNEAS TÁCTICAS ───────────────
+ 
+ [ENG 1] <─── (PUMP 1A/1B) <───┐
+                               ├─── [ VALVULA X-FEED: {'ABIERTA' if st.session_state.xfeed else 'CERRADA'} ]
+ [ENG 3] <─── (PUMP 3A/3B) <───┘
+
+----------------------------------------------------------------------
+🔔 CREW ALERTING SYSTEM (CAS) - COMBUSTIBLE:
+
+{st.session_state.fuel_msg}
+        </div>
+        """
+        st.markdown(crt_fuel_html, unsafe_allow_html=True)
