@@ -1,9 +1,12 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Configuración inicial de la página
 st.set_page_config(page_title="Simulador Falcon 7X - GTAE", page_icon="✈️", layout="wide")
 
-# Estilos globales de inmersión técnica (Dark Cockpit & FAE Panel)
+# ==========================================
+# ESTILOS GLOBALES REVISADOS (Sin colapsos)
+# ==========================================
 st.markdown("""
     <style>
     .main { background-color: #05070c; color: #f1f5f9; }
@@ -26,30 +29,17 @@ st.markdown("""
     }
     
     /* Consolas fijas grises */
-    .consola-gris { background-color: #4a5568; border: 4px solid #2d3748; padding: 25px; border-radius: 8px; margin-bottom: 15px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-    .seccion-dc { border: 3px solid #22c55e; padding: 15px; border-radius: 6px; background-color: #2d3748; }
-    .seccion-fuel { border: 4px solid #111827; padding: 20px; border-radius: 8px; background-color: #1f2937; box-shadow: inset 0 4px 10px rgba(0,0,0,0.8); }
-    .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
-    
-    /* Réplica exacta y hermética de la Pantalla CRT Honeywell EASy Eléctrica */
-    .crt-easy-display { 
-        font-family: 'Courier New', Courier, monospace; 
+    .consola-gris { 
+        background-color: #4a5568; 
+        border: 4px solid #2d3748; 
+        padding: 20px; 
         border-radius: 8px; 
-        padding: 25px; 
-        min-height: 520px; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.7); 
-        white-space: pre-wrap;
+        margin-bottom: 15px; 
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); 
     }
-    .crt-normal { background-color: #000000 !important; border: 5px solid #374151 !important; color: #00ff66 !important; }
-    .crt-error { 
-        background-color: #7f1d1d !important; border: 5px solid #ef4444 !important; color: #fca5a5 !important;
-        animation: alarma-parpadeo 1s infinite alternate;
-    }
-    @keyframes alarma-parpadeo {
-        0% { background-color: #7f1d1d; border-color: #ef4444; }
-        100% { background-color: #b91c1c; border-color: #f87171; }
-    }
-    .crt-header { display: flex; justify-content: space-between; border-bottom: 2px solid #064e3b; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold; }
+    .seccion-dc { border: 3px solid #22c55e; padding: 12px; border-radius: 6px; background-color: #2d3748; }
+    .seccion-fuel { border: 4px solid #111827; padding: 15px; border-radius: 8px; background-color: #1f2937; box-shadow: inset 0 4px 10px rgba(0,0,0,0.8); }
+    .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
     
     /* Pantallas Digitales de Segmentos Rojas del Panel de Combustible Real */
     .display-7segmentos {
@@ -91,39 +81,66 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# INYECCIÓN DEL EFECTO AUDIO-TÁCTIL (CLIC)
+# CONTROL DE AUDIO SIN BLOQUEO DE IFRAME
 # ==========================================
-# Esta función de JS crea un pulso mecánico seco simulando un switch de aviación real
-st.markdown("""
-    <script>
-    function playClickSound() {
+# Usamos variables en session_state para disparar los efectos acústicos de forma nativa
+if "play_sound" not in st.session_state:
+    st.session_state.play_sound = None
+
+def trigger_audio(sound_type):
+    st.session_state.play_sound = sound_type
+
+# Inyección de componentes de audio dedicados si hay un trigger activo
+if st.session_state.play_sound == "click":
+    components.html("""
+        <script>
         var context = new (window.AudioContext || window.webkitAudioContext)();
         var osc = context.createOscillator();
         var gain = context.createGain();
-        
-        // Simulación acústica del impacto metálico del switch
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(120, context.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(10, context.currentTime + 0.05);
-        
-        gain.gain.setValueAtTime(0.4, context.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.05);
-        
+        osc.frequency.setValueAtTime(140, context.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, context.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.5, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.04);
         osc.connect(gain);
         gain.connect(context.destination);
         osc.start();
-        osc.stop(context.currentTime + 0.06);
-    }
-    
-    // Escuchar dinámicamente los clics en los botones de Streamlit
-    parent.document.addEventListener('DOMContentLoaded', function() {
-        var buttons = parent.document.querySelectorAll('.stButton button');
-        buttons.forEach(function(btn) {
-            btn.addEventListener('mousedown', playClickSound);
-        });
-    });
-    </script>
-""", unsafe_allow_html=True)
+        osc.stop(context.currentTime + 0.05);
+        </script>
+    """, height=0, width=0)
+    st.session_state.play_sound = None
+
+elif st.session_state.play_sound == "alarm":
+    components.html("""
+        <script>
+        var context = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = context.createOscillator();
+        var gain = context.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 450;
+        gain.gain.setValueAtTime(0.2, context.currentTime);
+        osc.connect(gain);
+        gain.connect(context.destination);
+        osc.start();
+        setTimeout(function(){ osc.stop(); }, 1200);
+        </script>
+    """, height=0, width=0)
+    st.session_state.play_sound = None
+
+elif st.session_state.play_sound == "fuel_ok":
+    components.html("""
+        <script>
+        var context = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = context.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = 580;
+        osc.connect(context.destination);
+        osc.start();
+        setTimeout(function(){ osc.stop(); }, 400);
+        </script>
+    """, height=0, width=0)
+    st.session_state.play_sound = None
+
 
 # ==========================================
 # SISTEMA DE CONTROL DE ACCESO (LOGIN)
@@ -161,6 +178,7 @@ if not st.session_state.autenticado:
                     st.error("❌ Credenciales incorrectas. Acceso denegado para personal no autorizado.")
     st.stop()
 
+
 # ==========================================
 # ENTORNO PROTEGIDO - NAVEGACIÓN
 # ==========================================
@@ -186,13 +204,6 @@ if "pump_3a" not in st.session_state: st.session_state.pump_3a = False
 if "pump_3b" not in st.session_state: st.session_state.pump_3b = False
 if "fuel_error" not in st.session_state: st.session_state.fuel_error = False
 if "fuel_msg" not in st.session_state: st.session_state.fuel_msg = ""
-
-# Trigger para forzar sonido de clic tras recargar la interfaz
-click_trigger_html = """
-<script>
-if (typeof playClickSound === 'function') { playClickSound(); }
-</script>
-"""
 
 # ------------------------------------------------------------------
 # DESARROLLO DEL MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)
@@ -225,6 +236,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
     def registrar_error(mensaje):
         st.session_state.error_activo = True
         st.session_state.msg_error = mensaje
+        trigger_audio("alarm")
 
     col_left, col_right = st.columns([1.2, 1])
 
@@ -238,6 +250,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[1]:
             if st.button("LH MASTER", key="lhmstr"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 11: st.session_state.step_e = 12
                     else: registrar_error("LH MASTER accionado fuera de secuencia de O.T.")
@@ -248,6 +261,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[2]:
             if st.button("LH INIT", key="lhinit"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 7: st.session_state.step_e = 8
                     else: registrar_error("LH INIT accionado sin acoplamiento de BUS TIE.")
@@ -258,6 +272,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[3]:
             if st.button("BUS TIE", key="bustie"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 6: st.session_state.step_e = 7
                     else: registrar_error("BUS TIE presionado antes de la protección de la RAT.")
@@ -268,6 +283,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[4]:
             if st.button("RH INIT", key="rhinit"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 7: st.session_state.step_e = 8
                     else: registrar_error("RH INIT accionado sin acoplamiento de BUS TIE.")
@@ -278,6 +294,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[5]:
             if st.button("RH MASTER", key="rhmstr"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 11: st.session_state.step_e = 12
                     else: registrar_error("RH MASTER accionado fuera de secuencia de O.T.")
@@ -288,6 +305,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[6]:
             if st.button("CABIN MASTER", key="cabin"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 9: st.session_state.step_e = 10
                     else: registrar_error("CABIN MASTER accionado sin alimentación principal estable.")
@@ -298,6 +316,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             
         with fs[7]:
             if st.button("EXT POWER", key="extpwr"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 8: st.session_state.step_e = 9
                     else: registrar_error("EXT POWER presionado sin inicialización previa de barras esenciales.")
@@ -314,6 +333,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
         with fi[0]: st.button("GEN 1", disabled=True, key="gen1"); st.markdown("<div class='luz-f7x-off'>OFF</div>", unsafe_allow_html=True)
         with fi[1]:
             if st.button("LH ISOL", key="lhisol"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 10: st.session_state.step_e = 11
                     else: registrar_error("Aislamiento LH accionado antes de establecer la carga comercial.")
@@ -323,6 +343,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
         with fi[2]:
             if st.button("BAT 1", key="bat1"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 4: st.session_state.step_e = 5
                     else: registrar_error("BAT 1 accionada sin parámetros estables en la planta externa.")
@@ -334,6 +355,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
         with fi[3]:
             if st.button("BAT 2", key="bat2"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 4: st.session_state.step_e = 5
                     else: registrar_error("BAT 2 accionada sin parámetros estables en la planta externa.")
@@ -346,6 +368,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
         with fi[4]: st.button("RAT RESET", disabled=True, key="rat_res"); st.markdown("<div class='luz-f7x-off'>OFF</div>", unsafe_allow_html=True)
         with fi[5]:
             if st.button("RH ISOL", key="rhisol"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 10: st.session_state.step_e = 11
                     else: registrar_error("Aislamiento RH accionado antes de establecer la carga comercial.")
@@ -362,6 +385,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
         cx1, cx2, cx3, cx4, cx5 = st.columns(5)
         with cx1:
             if st.button("🔌 ACOPLAR/REMOVER RECEPTÁCULO", key="con_gpu"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 0: st.session_state.step_e = 1
                     else: registrar_error("Planta externa acoplada fuera de secuencia.")
@@ -373,6 +397,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
         with cx2:
             if st.button("⚡ REGULADOR TENSIÓN TIERRA", key="set_volt"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 1: st.session_state.step_e = 2
                     else: registrar_error("Ajuste de tensión modificado sin cableado de entrada.")
@@ -382,6 +407,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
         with cx3:
             if st.button("🎛️ SWITCH EXTERNO GPU", key="sw_gpu"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 2: st.session_state.step_e = 3
                     else: registrar_error("Switch GPU colocado en ON sin regulación de voltaje nominal.")
@@ -393,6 +419,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
         with cx4:
             if st.button("⚙️ CONTROL FRENO PARQUEO", key="park_brake"):
+                trigger_audio("click")
                 if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.step_e == 3: st.session_state.step_e = 4
                     else: registrar_error("Freno de parqueo omitido antes de la entrada de barras.")
@@ -402,6 +429,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
         with cx5:
             if st.button("🚪 COMPUERTA EXTERIOR F7X", key="close_door_f7x"):
+                trigger_audio("click")
                 if modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)":
                     if st.session_state.step_d == 6: st.session_state.step_d = 7
                     else: registrar_error("No se puede cerrar la compuerta exterior antes de desconectar físicamente el receptáculo de rampa.")
@@ -412,6 +440,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
 
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🚨 CORREGIR / REINICIAR EVALUACIÓN", key="reset_sim"):
+            trigger_audio("click")
             st.session_state.step_e = 0
             st.session_state.step_d = 0
             st.session_state.error_activo = False
@@ -425,6 +454,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
         st.markdown("<div style='color: #f87171; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>EMERGENCY BOX (MANDO SEPARADO)</div>", unsafe_allow_html=True)
         
         if st.button("🔘 RAT AUTO", key="ratauto"):
+            trigger_audio("click")
             if modo_operacion == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                 if st.session_state.step_e == 5: st.session_state.step_e = 6
                 else: registrar_error("RAT AUTO accionada fuera del orden estipulado de O.T.")
@@ -440,6 +470,7 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
         st.markdown("<div style='color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>⚙️ CONTROL DE COMBUSTIBLE Y MOTOR DE LA GPU</div>", unsafe_allow_html=True)
         
         if st.button("🛑 DETENER MOTOR GPU", key="stop_gpu_engine"):
+            trigger_audio("click")
             if modo_operacion == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)":
                 if st.session_state.step_d == 4: st.session_state.step_d = 5
                 else: registrar_error("No se puede detener el motor de la planta sin antes pasar el Switch Externo GPU a la posición OFF.")
@@ -461,37 +492,27 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             s_isol = "AISLADO [| AMBER |]" if st.session_state.step_d >= 1 else "CONECTADO [── GREEN ──]"
             pasos_completados = st.session_state.step_d == 7
 
-        # --- REPRODUCCIÓN DE AUDIO EN CASO DE ALERTA ---
-        audio_html = ""
+        # Configuración visual de la pantalla nativa de Streamlit para evitar cajas vacías
         if st.session_state.error_activo:
-            clase_pantalla = "crt-error"
+            color_borde = "#ef4444"
+            color_fondo = "#2d1a1a"
+            color_texto = "#fca5a5"
             status_cas = f"🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n\n  DETALLE: {st.session_state.msg_error}\n\n  [O.T. QUEBRADA]: Operador militar rompió la secuencia.\n  Presione el botón rojo de corrección para reiniciar."
-            audio_html = """
-                <script>
-                var context = new (window.AudioContext || window.webkitAudioContext)();
-                var osc = context.createOscillator();
-                var gain = context.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.value = 450;
-                gain.gain.setValueAtTime(0.15, context.currentTime);
-                osc.connect(gain);
-                gain.connect(context.destination);
-                osc.start();
-                setTimeout(function(){ osc.stop(); }, 1500);
-                </script>
-            """
         elif pasos_completados:
-            clase_pantalla = "crt-normal"
+            color_borde = "#22c55e"
+            color_fondo = "#050f08"
+            color_texto = "#00ff66"
             status_cas = "⚡ SYSTEMS STATUS: SECUENCIA CONCLUIDA CON ÉXITO\n\n  El procedimiento cumple al 100% las normativas técnicas e instrucciones\n  del manual Dassault para el Grupo de Transporte Aéreo Especial."
         else:
-            clase_pantalla = "crt-normal"
+            color_borde = "#4b5563"
+            color_fondo = "#000000"
+            color_texto = "#38bdf8"
             status_cas = "📲 MODO EVALUACIÓN COMPLETA ACTIVO\n\n  Las instrucciones visuales han sido removidas de la pantalla CRT.\n  El operador militar debe accionar los interruptores guiándose por su O.T."
 
-        pantalla_html = f"""
-        {audio_html}
-        {click_trigger_html}
-        <div class='crt-easy-display {clase_pantalla}'>
-<div class='crt-header'><span>SISTEMA: HONEYWELL EASY PDU 1</span><span>MODO: EVALUACIÓN</span></div>
+        # RENDERIZADO SEGURO NATIVO DE LA PANTALLA CRT
+        st.markdown(f"""
+            <div style="font-family: 'Courier New', Courier, monospace; border: 4px solid {color_borde}; background-color: {color_fondo}; color: {color_texto}; padding: 20px; border-radius: 8px; min-height: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); white-space: pre-wrap;">
+<div style="display: flex; justify-content: space-between; border-bottom: 2px solid #374151; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold;"><span>SISTEMA: HONEYWELL EASY PDU 1</span><span>MODO: EVALUACIÓN</span></div>
 ⚙️ TELEMETRÍA DE RED DE BARRAS EN TIEMPO REAL (ATA 24):
  • FEEDER DE ENTRADA GPU TIERRA : {v_gpu}
  • LH ESSENTIAL BUS RED LINE    : {v_ess}
@@ -500,9 +521,8 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
 ----------------------------------------------------------------------
 🔔 CREW ALERTING SYSTEM (CAS) & MONITOR:
 {status_cas}
-        </div>
-        """
-        st.markdown(pantalla_html, unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------
 # DESARROLLO DEL MÓDULO II: PRESSURE FUELING PANEL (ATA 28) - RAMPA
@@ -525,6 +545,7 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
         if st.session_state.current_total >= st.session_state.fuel_target:
             st.session_state.current_total = st.session_state.fuel_target
             st.session_state.fueling_active = False
+            trigger_audio("fuel_ok")
         st.rerun()
 
     col_panel_f, col_info_f = st.columns([1.4, 1])
@@ -541,36 +562,46 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
             st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.85rem; color: #ffffff;'>LEFT</div>", unsafe_allow_html=True)
             l_l = "<div class='luz-f7x-verde'>FULL</div>" if st.session_state.current_total >= (st.session_state.fuel_target * 0.3) else "<div class='luz-f7x-off'>OFF</div>"
             st.markdown(l_l, unsafe_allow_html=True)
+            prev_l = st.session_state.sw_left
             st.session_state.sw_left = st.radio("Selector L:", ["ON", "OFF"], index=1 if st.session_state.sw_left == "OFF" else 0, key="r_left", label_visibility="collapsed")
+            if prev_l != st.session_state.sw_left: trigger_audio("click"); st.rerun()
             
         with c_switches[1]:
             st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.85rem; color: #ffffff;'>CENTER</div>", unsafe_allow_html=True)
             l_c = "<div class='luz-f7x-verde'>FULL</div>" if st.session_state.current_total >= (st.session_state.fuel_target * 0.8) else "<div class='luz-f7x-off'>OFF</div>"
             st.markdown(l_c, unsafe_allow_html=True)
+            prev_c = st.session_state.sw_center
             st.session_state.sw_center = st.radio("Selector C:", ["ON", "OFF"], index=1 if st.session_state.sw_center == "OFF" else 0, key="r_center", label_visibility="collapsed")
+            if prev_c != st.session_state.sw_center: trigger_audio("click"); st.rerun()
             
         with c_switches[2]:
             st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.85rem; color: #ffffff;'>RIGHT</div>", unsafe_allow_html=True)
             l_r = "<div class='luz-f7x-verde'>FULL</div>" if st.session_state.current_total >= st.session_state.fuel_target else "<div class='luz-f7x-off'>OFF</div>"
             st.markdown(l_r, unsafe_allow_html=True)
+            prev_r = st.session_state.sw_right
             st.session_state.sw_right = st.radio("Selector R:", ["ON", "OFF"], index=1 if st.session_state.sw_right == "OFF" else 0, key="r_right", label_visibility="collapsed")
+            if prev_r != st.session_state.sw_right: trigger_audio("click"); st.rerun()
 
         st.markdown("<br><div style='border-top: 2px dashed #4b5563; margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
         c_bottom = st.columns(4)
         with c_bottom[0]:
-            if st.button("HIGH LEVEL TEST"): st.toast("🧪 Realizando test de alta presión en líneas...")
-            if st.button("LAMP TEST"): st.toast("💡 Verificación de anunciadores OK")
+            if st.button("HIGH LEVEL TEST"): trigger_audio("click"); st.toast("🧪 Realizando test de alta presión en líneas...")
+            if st.button("LAMP TEST"): trigger_audio("click"); st.toast("💡 Verificación de anunciadores OK")
         with c_bottom[1]:
             st.markdown(f"<div class='display-7segmentos-sub'>{st.session_state.fuel_target:05d}</div>", unsafe_allow_html=True)
             st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.7rem; color: #9ca3af;'>TOTAL QTY SELECT</div>", unsafe_allow_html=True)
         with c_bottom[2]:
             if st.button("🔼 INC ( Lbs )"):
+                trigger_audio("click")
                 if st.session_state.fuel_target < 24000: st.session_state.fuel_target += 100; st.rerun()
             if st.button("🔽 DEC ( Lbs )"):
+                trigger_audio("click")
                 if st.session_state.fuel_target > 1000: st.session_state.fuel_target -= 100; st.rerun()
         with c_bottom[3]:
+            prev_mode = st.session_state.mode_select
             st.session_state.mode_select = st.radio("Modo Carga:", ["FULL", "PARTIAL"], index=1 if st.session_state.mode_select == "PARTIAL" else 0, key="r_mode")
+            if prev_mode != st.session_state.mode_select: trigger_audio("click")
             if st.session_state.mode_select == "FULL": st.session_state.fuel_target = 24000
 
         st.markdown("</div></div>", unsafe_allow_html=True)
@@ -580,16 +611,19 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
         cx_f1, cx_f2, cx_f3 = st.columns(3)
         with cx_f1:
             if st.button("🚀 INICIAR SUCCIÓN / REFUELING"):
+                trigger_audio("click")
                 if st.session_state.sw_left == "ON" or st.session_state.sw_center == "ON" or st.session_state.sw_right == "ON":
                     st.session_state.fueling_active = True
                     st.rerun()
                 else: st.error("Abra al menos un selector de válvula (ON) para iniciar el paso de presión.")
         with cx_f2:
             if st.button("⏹️ STOP FUELING (PAUSA)"):
+                trigger_audio("click")
                 st.session_state.fueling_active = False
                 st.rerun()
         with cx_f3:
             if st.button("🚨 DRENAR / RESETEAR TANQUES"):
+                trigger_audio("click")
                 st.session_state.current_total = 1200
                 st.session_state.fueling_active = False
                 st.rerun()
@@ -598,34 +632,17 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
     with col_info_f:
         st.markdown("### 📋 Monitor de Verificación de Carga")
         
-        # --- GENERACIÓN DE AUDIO DINÁMICO PARA COMBUSTIBLE ---
-        audio_fuel_html = ""
         if st.session_state.fueling_active:
-            clase_pantalla_fuel = "crt-normal"
             msg_sistema_fuel = "⚡ REFUELING EN PROCESO ⚡\n\n Bombeo por presión externo activo.\n Transfiriendo combustible hacia los tanques estructurales de la aeronave."
         elif st.session_state.current_total == st.session_state.fuel_target:
-            clase_pantalla_fuel = "crt-normal"
             msg_sistema_fuel = "🟢 SUMINISTRO REQUERIDO ALCANZADO\n\n Peso y balance nominales.\n Acople de boquilla listo para remoción de rampa de manera segura."
-            audio_fuel_html = """
-                <script>
-                var context = new (window.AudioContext || window.webkitAudioContext)();
-                var osc = context.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.value = 600;
-                osc.connect(context.destination);
-                osc.start();
-                setTimeout(function(){ osc.stop(); }, 400);
-                </script>
-            """
         else:
-            clase_pantalla_fuel = "crt-normal"
             msg_sistema_fuel = "📲 ACOPLE DE SUCCIÓN COMPROBADO\n\n Sistema en espera de comandos físicos.\n Ajuste el indicador 'TOTAL QTY SELECT' y pase los tanques a ON para iniciar."
 
-        pantalla_refuel_html = f"""
-        {audio_fuel_html}
-        {click_trigger_html}
-        <div class='crt-easy-display {clase_pantalla_fuel}' style='color: #ffb700; border-color: #4b5563;'>
-<div class='crt-header' style='border-bottom-color: #78350f;'><span style='color: #38bdf8;'>MONITOR: PRESSURE REFUELING DATA</span><span style='color: #38bdf8;'>FAE-RAMP</span></div>
+        # RECONSTRUCCIÓN HERMÉTICA DE LA PANTALLA REFUEL MONITOR NATIVA
+        st.markdown(f"""
+            <div style="font-family: 'Courier New', Courier, monospace; border: 4px solid #4b5563; background-color: #000000; color: #ffb700; padding: 20px; border-radius: 8px; min-height: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); white-space: pre-wrap;">
+<div style="display: flex; justify-content: space-between; border-bottom: 2px solid #78350f; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold;"><span style="color: #38bdf8;">MONITOR: PRESSURE REFUELING DATA</span><span style="color: #38bdf8;">FAE-RAMP</span></div>
 📊 PARÁMETROS MECÁNICOS DE CONTROL DE SUMINISTRO:
 
  • ESTADO SELECTOR COMPUERTA IZQ : {st.session_state.sw_left}
@@ -644,6 +661,5 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
 🔔 CONTROL ALERTING SYSTEM (RAMPA) - STATUS:
 
 {msg_sistema_fuel}
-        </div>
-        """
-        st.markdown(pantalla_refuel_html, unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
