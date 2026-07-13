@@ -35,7 +35,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# MEMORIAS OPERACIONALES GENERALES
+# INITIALIZACIONES Y MEMORIA OPERACIONAL
 # ==============================================================================
 if "autenticado" not in st.session_state: st.session_state.autenticado = False
 if "audio_alarma" not in st.session_state: st.session_state.audio_alarma = None
@@ -52,7 +52,7 @@ if "valvula_der" not in st.session_state: st.session_state.valvula_der = "OFF"
 if "bombeo_activo" not in st.session_state: st.session_state.bombeo_activo = False
 
 # ==============================================================================
-# SISTEMA DE LOGIN DE SEGURIDAD CON LA FOTO DEL FALCON FAE
+# ACCESO DE SEGURIDAD CON LA IMAGEN PORTADA DEL FALCON FAE REAL
 # ==============================================================================
 if not st.session_state.autenticado:
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -71,14 +71,23 @@ if not st.session_state.autenticado:
                 else: st.error("❌ Credenciales incorrectas.")
     st.stop()
 
-# Manejador acústico de errores en mantenimiento
+# Manejador acústico centralizado para alertas procedimentales
 if st.session_state.audio_alarma == "alarma_critica":
-    components.html("<script>try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sawtooth';osc.frequency.setValueAtTime(450,ctx.currentTime);gain.gain.setValueAtTime(0.2,ctx.currentTime);osc.connect(gain);gain.connect(ctx.destination);osc.start();setTimeout(()=>{osc.stop();},1200);}catch(e){}</script>", height=0, width=0)
+    components.html("<script>try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sawtooth';osc.frequency.setValueAtTime(450,ctx.currentTime);gain.gain.setValueAtTime(0.25,ctx.currentTime);osc.connect(gain);gain.connect(ctx.destination);osc.start();setTimeout(()=>{osc.stop();},1200);}catch(e){}</script>", height=0, width=0)
     st.session_state.audio_alarma = None
 
-# Barra lateral
+# Lógica del camión cisterna en segundo plano (Módulo II)
+if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.session_state.combustible_objetivo:
+    st.session_state.combustible_actual += 400
+    if st.session_state.combustible_actual >= st.session_state.combustible_objetivo:
+        st.session_state.combustible_actual = st.session_state.combustible_objetivo
+        st.session_state.bombeo_activo = False
+    time.sleep(0.1)
+    st.rerun()
+
+# Configuración de barra lateral
 with st.sidebar:
-    st.markdown("<h3 style='color: #38bdf8; font-family: monospace;'>🖥 booster MANDO DE INSTRUCCIÓN</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #38bdf8; font-family: monospace;'>🖥️ MANDO DE INSTRUCCIÓN</h3>", unsafe_allow_html=True)
     entorno_activo = st.radio("SELECCIONE EL TIPO DE PROCEDIMIENTO:", ["✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS", "🔧 PANTALLAS DE MANTENIMIENTO"])
     st.markdown("---")
     if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
@@ -87,11 +96,11 @@ with st.sidebar:
         modulo_activo = st.radio("MÓDULOS MECÁNICOS DISPONIBLES:", ["MÓDULO I: DISTRIBUCIÓN ELÉCTRICA (ATA 24)", "MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28)"])
 
 # ------------------------------------------------------------------------------
-# PANTALLA 1: PROCEDIMIENTOS OPERATIVOS (3 MOTORES INTEGRALES EN CLIENTE)
+# PANTALLA 1: PROCEDIMIENTOS OPERATIVOS (3 MOTORES + RELOJES + ALARMAS CAS INTERNAS)
 # ------------------------------------------------------------------------------
 if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
     st.title("✈️ Pantalla de Procedimientos Operativos (Pilotos)")
-    st.subheader("Entrenamiento de Arranque de Plantas Motrices - Relojes Triples")
+    st.subheader("Arranque de Plantas Motrices - 3 Motores PW307A Independientes")
     st.markdown("---")
 
     html_triple_clocks = """
@@ -124,19 +133,19 @@ if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
-            <div style="flex: 1; text-align: center; background: #0b0f19; padding: 15px; border-radius: 6px; border: 1px solid #1e293b;">
+            <div id="box_0" style="flex: 1; text-align: center; background: #0b0f19; padding: 15px; border-radius: 6px; border: 1px solid #1e293b;">
                 <div style="font-weight: bold; color: #38bdf8; margin-bottom: 10px;">ENGINE 1 (LH)</div>
                 <canvas id="c_n1_0" width="110" height="110"></canvas><div id="t_n1_0" style="font-size:0.9rem; font-weight:bold; color:#22c55e;">0.0%</div>
                 <canvas id="c_n2_0" width="110" height="110"></canvas><div id="t_n2_0" style="font-size:0.9rem; font-weight:bold; color:#22c55e;">0.0%</div>
                 <canvas id="c_itt_0" width="110" height="110"></canvas><div id="t_itt_0" style="font-size:0.9rem; font-weight:bold; color:#f59e0b;">15°C</div>
             </div>
-            <div style="flex: 1; text-align: center; background: #0b0f19; padding: 15px; border-radius: 6px; border: 1px solid #1e293b;">
+            <div id="box_1" style="flex: 1; text-align: center; background: #0b0f19; padding: 15px; border-radius: 6px; border: 1px solid #1e293b;">
                 <div style="font-weight: bold; color: #38bdf8; margin-bottom: 10px;">ENGINE 2 (CTR)</div>
                 <canvas id="c_n1_1" width="110" height="110"></canvas><div id="t_n1_1" style="font-size:0.9rem; font-weight:bold; color:#22c55e;">0.0%</div>
                 <canvas id="c_n2_1" width="110" height="110"></canvas><div id="t_n2_1" style="font-size:0.9rem; font-weight:bold; color:#22c55e;">0.0%</div>
                 <canvas id="c_itt_1" width="110" height="110"></canvas><div id="t_itt_1" style="font-size:0.9rem; font-weight:bold; color:#f59e0b;">15°C</div>
             </div>
-            <div style="flex: 1; text-align: center; background: #0b0f19; padding: 15px; border-radius: 6px; border: 1px solid #1e293b;">
+            <div id="box_2" style="flex: 1; text-align: center; background: #0b0f19; padding: 15px; border-radius: 6px; border: 1px solid #1e293b;">
                 <div style="font-weight: bold; color: #38bdf8; margin-bottom: 10px;">ENGINE 3 (RH)</div>
                 <canvas id="c_n1_2" width="110" height="110"></canvas><div id="t_n1_2" style="font-size:0.9rem; font-weight:bold; color:#22c55e;">0.0%</div>
                 <canvas id="c_n2_2" width="110" height="110"></canvas><div id="t_n2_2" style="font-size:0.9rem; font-weight:bold; color:#22c55e;">0.0%</div>
@@ -146,7 +155,7 @@ if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
 
         <div style="border-top: 1px dashed #334155; margin-top: 20px; padding-top: 15px;">
             <div style="font-weight: bold; color: #fbbf24;">🔔 CREW ALERTING SYSTEM (CAS) DISPLAY FEED:</div>
-            <div id="cas_box" style="color:#38bdf8; font-size:0.85rem; margin-top:5px;">🟢 SYSTEMS GENERAL RUN NOMINAL</div>
+            <div id="cas_box" style="color:#38bdf8; font-size:0.85rem; margin-top:5px; font-weight:bold; background:#071220; padding:10px; border-radius:4px;">🟢 SYSTEMS GENERAL RUN NOMINAL\n Parámetros estables de rampa y balance.</div>
         </div>
     </div>
 
@@ -179,9 +188,11 @@ if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
             el.innerText = engines[idx].lever ? "RUN" : "SHUTOFF";
             el.style.background = engines[idx].lever ? "#22c55e" : "#7f1d1d";
             
+            // Lógica de detección de Hot Start por inyección prematura
             if(engines[idx].lever && engines[idx].phase === "CRANK" && engines[idx].n2 < 15.0) {
                 engines[idx].phase = "FAIL";
-                document.getElementById("cas_box").innerText = "🚨 ALERT CAS: HOT START IN ENGINE " + (idx+1) + "!\\n Inyección prematura de combustible con rotación N2 crítica.";
+                document.getElementById("box_" + idx).style.borderColor = "#ef4444";
+                document.getElementById("cas_box").innerHTML = "🚨 ALERT CAS: HOT START IN ENGINE " + (idx+1) + "!<br> Combustible inyectado prematuramente con rotación N2 inferior al 15% de ignición.";
                 document.getElementById("cas_box").style.color = "#ef4444";
                 playAlarmSound();
             }
@@ -189,12 +200,15 @@ if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
 
         function startEng(idx) {
             if(!bleed) {
-                document.getElementById("cas_box").innerText = "🚨 FALLO DE ARRANQUE: No hay presión neumática (APU BLEED CLOSED).";
+                document.getElementById("cas_box").innerText = "🚨 FALLO DE ARRANQUE: No hay presión neumática en las líneas (APU BLEED CLOSED).";
                 document.getElementById("cas_box").style.color = "#ef4444";
+                playAlarmSound();
                 return;
             }
             if(engines[idx].phase === "STBY") {
                 engines[idx].phase = "CRANK";
+                document.getElementById("cas_box").innerText = "🔶 MOTORING/CRANK EN PROCESO EN MOTOR " + (idx+1) + "...";
+                document.getElementById("cas_box").style.color = "#fbbf24";
             }
         }
 
@@ -204,7 +218,7 @@ if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
                 const osc = ctx.createOscillator(); const gain = ctx.createGain();
                 osc.type = 'sawtooth'; osc.frequency.value = 450; gain.gain.value = 0.2;
                 osc.connect(gain); gain.connect(ctx.destination); osc.start();
-                setTimeout(() => osc.stop(), 1000);
+                setTimeout(() => osc.stop(), 1200);
             } catch(e){}
         }
 
@@ -245,16 +259,28 @@ if entorno_activo == "✈️ PANTALLAS DE PROCEDIMIENTOS OPERATIVOS":
     components.html(html_triple_clocks, height=650)
 
 # ------------------------------------------------------------------------------
-# PANTALLA 2: PROCEDIMIENTOS DE MANTENIMIENTO (RESTAURADO CON BOTÓN RESET)
+# PANTALLA 2: PROCEDIMIENTOS DE MANTENIMIENTO (CON ALERTAS Y BOTÓN REINICIO)
 # ------------------------------------------------------------------------------
 else:
     st.title("🔧 Pantalla de Procedimientos de Mantenimiento (Técnicos)")
     st.markdown("---")
     
+    # --- MÓDULO I: DISTRIBUCIÓN ELÉCTRICA (ATA 24) ---
     if modulo_activo == "MÓDULO I: DISTRIBUCIÓN ELÉCTRICA (ATA 24)":
         st.subheader("Módulo I: Distribución Eléctrica y Secuenciación Avanzada de Barras")
         procedimiento = st.radio("⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:", ["ENERGIZACIÓN COMPLETA (COLD OPERATIONS)", "DESENERGIZACIÓN COMPLETA (SHUTDOWN)"], horizontal=True)
         
+        if "procedimiento_previo" not in st.session_state: st.session_state.procedimiento_previo = procedimiento
+        elif st.session_state.procedimiento_previo != procedimiento:
+            st.session_state.fase_e = 0; st.session_state.fase_d = 0
+            st.session_state.falla_procedimiento = False; st.session_state.descripcion_falla = ""
+            st.session_state.procedimiento_previo = procedimiento
+
+        def forzar_alarma(texto):
+            st.session_state.falla_procedimiento = True
+            st.session_state.descripcion_falla = texto
+            st.session_state.audio_alarma = "alarma_critica"
+
         col_fisica_panel, col_telemetria_pdu = st.columns([1.3, 1])
         with col_fisica_panel:
             st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
@@ -268,17 +294,21 @@ else:
                 if st.button("LH MSTR", key="lm_m"):
                     if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                         if st.session_state.fase_e == 11: st.session_state.fase_e = 12
-                        else: st.session_state.falla_procedimiento = True; st.session_state.descripcion_falla = "LH MSTR fuera de secuencia."; st.session_state.audio_alarma = "alarma_critica"
+                        else: forzar_alarma("LH MASTER activado de forma prematura fuera de la secuencia técnica.")
                     st.rerun()
                 st.markdown("<div class='anunciador-verde'>ON</div>" if st.session_state.fase_e >= 12 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
             with grid_sup[2]:
                 if st.button("LH INIT", key="lh_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 7: st.session_state.fase_e = 8
+                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
+                        if st.session_state.fase_e == 7: st.session_state.fase_e = 8
+                        else: forzar_alarma("LH INIT accionado sin acoplamiento de barras.")
                     st.rerun()
                 st.markdown("<div class='anunciador-apagado'>RUN</div>" if st.session_state.fase_e >= 8 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
             with grid_sup[3]:
                 if st.button("BUS TIE", key="bt_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 6: st.session_state.fase_e = 7
+                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
+                        if st.session_state.fase_e == 6: st.session_state.fase_e = 7
+                        else: forzar_alarma("BUS TIE accionado previo al armado de seguridad de la RAT.")
                     st.rerun()
                 st.markdown("<div class='anunciador-amber'>TIED</div>" if st.session_state.fase_e >= 7 else "<div class='anunciador-apagado'>AUTO</div>", unsafe_allow_html=True)
             with grid_sup[4]:
@@ -305,7 +335,7 @@ else:
 
             st.markdown("<div class='linea-tactica'></div>", unsafe_allow_html=True)
             
-            # FILA INFERIOR COMPLETA RESTAURADA
+            # FILA INFERIOR COMPLETA
             st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🔋 GENERATION & BATTERIES</div>", unsafe_allow_html=True)
             grid_inf = st.columns(8)
             with grid_inf[0]: st.button("GEN 1", disabled=True, key="g1"); st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
@@ -324,19 +354,11 @@ else:
                     if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 4: st.session_state.fase_e = 5
                     st.rerun()
                 st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.fase_e >= 5 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            with grid_inf[4]: st.button("RAT RSET", disabled=True, key="rat"); st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            with grid_inf[5]:
-                if st.button("RH ISOL", key="rhi"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 10: st.session_state.fase_e = 11
-                    st.rerun()
-                st.markdown("<div class='anunciador-apagado'>TIED</div>" if st.session_state.fase_e >= 11 else "<div class='anunciador-amber'>ISOL</div>", unsafe_allow_html=True)
-            with grid_inf[6]: st.button("GEN 2", disabled=True); st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            with grid_inf[7]: st.button("GEN 3", disabled=True); st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
-            
+
             st.markdown("<div class='linea-tactica'></div>", unsafe_allow_html=True)
             
-            # RECEPTÁCULOS DE TIERRA
+            # PLANTA EXTERNA
             st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🔧 CONFIGURACIÓN Y ACOPLE DE PLANTA EXTERNA</div>", unsafe_allow_html=True)
             grid_rampa = st.columns(5)
             with grid_rampa[0]:
@@ -359,24 +381,29 @@ else:
                     if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 3: st.session_state.fase_e = 4
                     st.rerun()
                 st.markdown("<div class='anunciador-verde'>ENGANCHADO</div>" if st.session_state.fase_e >= 4 else "<div class='anunciador-apagado'>LIBERADO</div>", unsafe_allow_html=True)
-            with grid_rampa[4]:
-                st.button("🚪 COMPUERTA EXTERIOR", disabled=True)
-                st.markdown("<div class='anunciador-verde'>COMPUERTA ABIERTA</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
-            # BOTÓN DE REINICIO MAESTRO RESTAURADO
+            # BOTÓN REINICIO DE EVALUACIÓN TÉCNICA RESTAURADO
             if st.button("🚨 CORREGIR / REINICIAR EVALUACIÓN", key="btn_reset_maint"):
-                st.session_state.fase_e = 0
-                st.session_state.fase_d = 0
-                st.session_state.falla_procedimiento = False
-                st.session_state.descripcion_falla = ""
+                st.session_state.fase_e = 0; st.session_state.fase_d = 0
+                st.session_state.falla_procedimiento = False; st.session_state.descripcion_falla = ""
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_telemetria_pdu:
             st.markdown("### 📺 Honeywell EASy Avionics Display")
-            st.markdown(f"<div class='pantalla-mfd'>📲 MODO EVALUACIÓN ACTIVO<br><br>Fase Eléctrica Actual: Paso {st.session_state.fase_e}/12</div>", unsafe_allow_html=True)
+            borde_crt = "#ef4444" if st.session_state.falla_procedimiento else "#475569"
+            fondo_crt = "#200d0d" if st.session_state.falla_procedimiento else "#000000"
+            texto_crt = "#fca5a5" if st.session_state.falla_procedimiento else "#38bdf8"
+            status_easydisplay = f"🚨 CAS ALERT: ERROR PROCEDIMENTAL DETECTADO\n\n  REPORTE CRÍTICO: {st.session_state.descripcion_falla}" if st.session_state.falla_procedimiento else f"📲 MODO EVALUACIÓN ACTIVO\n\nFase Eléctrica Actual: Paso {st.session_state.fase_e}/12"
+
+            st.markdown(f"""
+                <div class="pantalla-mfd" style="border: 5px solid {borde_crt}; background-color: {fondo_crt}; color: {texto_crt};">
+                    <div style="border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold;"><span>HONEYWELL PDU: AVIONICS SHIELD</span></div>
+                    {status_easydisplay}
+                </div>
+            """, unsafe_allow_html=True)
 
     # --- MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28) ---
     elif modulo_activo == "MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28)":
