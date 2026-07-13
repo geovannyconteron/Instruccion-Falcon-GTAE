@@ -31,7 +31,7 @@ st.markdown("""
     .seccion-fuel { border: 4px solid #111827; padding: 20px; border-radius: 8px; background-color: #1f2937; box-shadow: inset 0 4px 10px rgba(0,0,0,0.8); }
     .titulo-dc { color: #ffffff; font-weight: bold; font-size: 1rem; text-align: center; font-family: monospace; letter-spacing: 1px; margin-bottom: 15px; }
     
-    /* Pantalla CRT Honeywell EASy Eléctrica */
+    /* Réplica exacta y hermética de la Pantalla CRT Honeywell EASy Eléctrica */
     .crt-easy-display { 
         font-family: 'Courier New', Courier, monospace; 
         border-radius: 8px; 
@@ -91,6 +91,41 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
+# INYECCIÓN DEL EFECTO AUDIO-TÁCTIL (CLIC)
+# ==========================================
+# Esta función de JS crea un pulso mecánico seco simulando un switch de aviación real
+st.markdown("""
+    <script>
+    function playClickSound() {
+        var context = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = context.createOscillator();
+        var gain = context.createGain();
+        
+        // Simulación acústica del impacto metálico del switch
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, context.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, context.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0.4, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.05);
+        
+        osc.connect(gain);
+        gain.connect(context.destination);
+        osc.start();
+        osc.stop(context.currentTime + 0.06);
+    }
+    
+    // Escuchar dinámicamente los clics en los botones de Streamlit
+    parent.document.addEventListener('DOMContentLoaded', function() {
+        var buttons = parent.document.querySelectorAll('.stButton button');
+        buttons.forEach(function(btn) {
+            btn.addEventListener('mousedown', playClickSound);
+        });
+    });
+    </script>
+""", unsafe_allow_html=True)
+
+# ==========================================
 # SISTEMA DE CONTROL DE ACCESO (LOGIN)
 # ==========================================
 if "autenticado" not in st.session_state:
@@ -142,6 +177,22 @@ with st.sidebar:
         "Seleccione el sistema a evaluar:",
         ["MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)", "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)"]
     )
+
+# Inicializar estados de combustible
+if "pump_1a" not in st.session_state: st.session_state.pump_1a = False
+if "pump_1b" not in st.session_state: st.session_state.pump_1b = False
+if "xfeed" not in st.session_state: st.session_state.xfeed = False
+if "pump_3a" not in st.session_state: st.session_state.pump_3a = False
+if "pump_3b" not in st.session_state: st.session_state.pump_3b = False
+if "fuel_error" not in st.session_state: st.session_state.fuel_error = False
+if "fuel_msg" not in st.session_state: st.session_state.fuel_msg = ""
+
+# Trigger para forzar sonido de clic tras recargar la interfaz
+click_trigger_html = """
+<script>
+if (typeof playClickSound === 'function') { playClickSound(); }
+</script>
+"""
 
 # ------------------------------------------------------------------
 # DESARROLLO DEL MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)
@@ -410,9 +461,25 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             s_isol = "AISLADO [| AMBER |]" if st.session_state.step_d >= 1 else "CONECTADO [── GREEN ──]"
             pasos_completados = st.session_state.step_d == 7
 
+        # --- REPRODUCCIÓN DE AUDIO EN CASO DE ALERTA ---
+        audio_html = ""
         if st.session_state.error_activo:
             clase_pantalla = "crt-error"
             status_cas = f"🚨 CAS ALERT: ERROR PROCEDIMENTAL INDEBIDO\n\n  DETALLE: {st.session_state.msg_error}\n\n  [O.T. QUEBRADA]: Operador militar rompió la secuencia.\n  Presione el botón rojo de corrección para reiniciar."
+            audio_html = """
+                <script>
+                var context = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = context.createOscillator();
+                var gain = context.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.value = 450;
+                gain.gain.setValueAtTime(0.15, context.currentTime);
+                osc.connect(gain);
+                gain.connect(context.destination);
+                osc.start();
+                setTimeout(function(){ osc.stop(); }, 1500);
+                </script>
+            """
         elif pasos_completados:
             clase_pantalla = "crt-normal"
             status_cas = "⚡ SYSTEMS STATUS: SECUENCIA CONCLUIDA CON ÉXITO\n\n  El procedimiento cumple al 100% las normativas técnicas e instrucciones\n  del manual Dassault para el Grupo de Transporte Aéreo Especial."
@@ -421,6 +488,8 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             status_cas = "📲 MODO EVALUACIÓN COMPLETA ACTIVO\n\n  Las instrucciones visuales han sido removidas de la pantalla CRT.\n  El operador militar debe accionar los interruptores guiándose por su O.T."
 
         pantalla_html = f"""
+        {audio_html}
+        {click_trigger_html}
         <div class='crt-easy-display {clase_pantalla}'>
 <div class='crt-header'><span>SISTEMA: HONEYWELL EASY PDU 1</span><span>MODO: EVALUACIÓN</span></div>
 ⚙️ TELEMETRÍA DE RED DE BARRAS EN TIEMPO REAL (ATA 24):
@@ -443,7 +512,6 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
     st.subheader("Réplica Exacta del Dispositivo Físico de Control en Rampa (Lbs)")
     st.markdown("---")
     
-    # Inicialización de variables para el panel exterior de combustible
     if "fuel_target" not in st.session_state: st.session_state.fuel_target = 10650
     if "sw_left" not in st.session_state: st.session_state.sw_left = "OFF"
     if "sw_center" not in st.session_state: st.session_state.sw_center = "OFF"
@@ -452,7 +520,6 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
     if "current_total" not in st.session_state: st.session_state.current_total = 1200
     if "fueling_active" not in st.session_state: st.session_state.fueling_active = False
 
-    # Simulación del proceso de llenado
     if st.session_state.fueling_active and st.session_state.current_total < st.session_state.fuel_target:
         st.session_state.current_total += 350
         if st.session_state.current_total >= st.session_state.fuel_target:
@@ -463,20 +530,15 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
     col_panel_f, col_info_f = st.columns([1.4, 1])
 
     with col_panel_f:
-        # Contenedor gris que emula el chasis físico metálico de la aeronave
         st.markdown("<div class='consola-gris' style='background-color: #374151; border: 5px solid #1f2937;'><div class='seccion-fuel'>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center; font-weight: bold; font-family: monospace; font-size: 1.1rem; color: #ffffff; margin-bottom: 20px;'>PRESSURE FUELING PANEL (Lbs)</div>", unsafe_allow_html=True)
         
-        # --- PANTALLA PRINCIPAL: TOTAL QTY ---
         st.markdown(f"<div class='display-7segmentos'>{st.session_state.current_total:05d}</div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.75rem; color: #9ca3af; margin-bottom: 25px;'>TOTAL QTY</div>", unsafe_allow_html=True)
         
-        # --- FILA DE INTERRUPTORES DE TRES VÍAS (LEFT - CENTER - RIGHT) ---
         c_switches = st.columns(3)
-        
         with c_switches[0]:
             st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.85rem; color: #ffffff;'>LEFT</div>", unsafe_allow_html=True)
-            # Luces de estado de la compuerta del tanque
             l_l = "<div class='luz-f7x-verde'>FULL</div>" if st.session_state.current_total >= (st.session_state.fuel_target * 0.3) else "<div class='luz-f7x-off'>OFF</div>"
             st.markdown(l_l, unsafe_allow_html=True)
             st.session_state.sw_left = st.radio("Selector L:", ["ON", "OFF"], index=1 if st.session_state.sw_left == "OFF" else 0, key="r_left", label_visibility="collapsed")
@@ -495,46 +557,33 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
 
         st.markdown("<br><div style='border-top: 2px dashed #4b5563; margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
-        # --- FILA INFERIOR DE AJUSTE Y CONTROL DIGITAL ---
         c_bottom = st.columns(4)
-        
         with c_bottom[0]:
-            if st.button("HIGH LEVEL TEST"):
-                st.toast("🧪 Realizando test de alta presión en líneas...")
-            if st.button("LAMP TEST"):
-                st.toast("💡 Verificación de anunciadores OK")
-                
+            if st.button("HIGH LEVEL TEST"): st.toast("🧪 Realizando test de alta presión en líneas...")
+            if st.button("LAMP TEST"): st.toast("💡 Verificación de anunciadores OK")
         with c_bottom[1]:
-            # PANTALLA SECUNDARIA DE SELECCIÓN TARGET
             st.markdown(f"<div class='display-7segmentos-sub'>{st.session_state.fuel_target:05d}</div>", unsafe_allow_html=True)
             st.markdown("<div style='text-align: center; font-weight: bold; font-size: 0.7rem; color: #9ca3af;'>TOTAL QTY SELECT</div>", unsafe_allow_html=True)
-            
         with c_bottom[2]:
-            # Botones de Incremento y Decremento manual
             if st.button("🔼 INC ( Lbs )"):
                 if st.session_state.fuel_target < 24000: st.session_state.fuel_target += 100; st.rerun()
             if st.button("🔽 DEC ( Lbs )"):
                 if st.session_state.fuel_target > 1000: st.session_state.fuel_target -= 100; st.rerun()
-                
         with c_bottom[3]:
-            # Conmutador FULL / PARTIAL
             st.session_state.mode_select = st.radio("Modo Carga:", ["FULL", "PARTIAL"], index=1 if st.session_state.mode_select == "PARTIAL" else 0, key="r_mode")
-            if st.session_state.mode_select == "FULL":
-                st.session_state.fuel_target = 24000
+            if st.session_state.mode_select == "FULL": st.session_state.fuel_target = 24000
 
         st.markdown("</div></div>", unsafe_allow_html=True)
         
-        # Controles operativos de reabastecimiento en tierra
         st.markdown("<div class='consola-gris' style='background-color: #2d3748;'>", unsafe_allow_html=True)
         st.markdown("<div style='color: #38bdf8; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: center;'>🚧 MANDOS DE OPERACIÓN DEL CAMIÓN CISTERNA EN RAMPA</div>", unsafe_allow_html=True)
         cx_f1, cx_f2, cx_f3 = st.columns(3)
         with cx_f1:
-            if st.button("🚀 INICIAR SUECCIÓN / REFUELING"):
+            if st.button("🚀 INICIAR SUCCIÓN / REFUELING"):
                 if st.session_state.sw_left == "ON" or st.session_state.sw_center == "ON" or st.session_state.sw_right == "ON":
                     st.session_state.fueling_active = True
                     st.rerun()
-                else:
-                    st.error("Abra al menos un selector de válvula (ON) para iniciar el paso de presión.")
+                else: st.error("Abra al menos un selector de válvula (ON) para iniciar el paso de presión.")
         with cx_f2:
             if st.button("⏹️ STOP FUELING (PAUSA)"):
                 st.session_state.fueling_active = False
@@ -549,19 +598,32 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
     with col_info_f:
         st.markdown("### 📋 Monitor de Verificación de Carga")
         
-        # Lógica de estados CAS del panel de presión
+        # --- GENERACIÓN DE AUDIO DINÁMICO PARA COMBUSTIBLE ---
+        audio_fuel_html = ""
         if st.session_state.fueling_active:
             clase_pantalla_fuel = "crt-normal"
             msg_sistema_fuel = "⚡ REFUELING EN PROCESO ⚡\n\n Bombeo por presión externo activo.\n Transfiriendo combustible hacia los tanques estructurales de la aeronave."
         elif st.session_state.current_total == st.session_state.fuel_target:
             clase_pantalla_fuel = "crt-normal"
             msg_sistema_fuel = "🟢 SUMINISTRO REQUERIDO ALCANZADO\n\n Peso y balance nominales.\n Acople de boquilla listo para remoción de rampa de manera segura."
+            audio_fuel_html = """
+                <script>
+                var context = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = context.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = 600;
+                osc.connect(context.destination);
+                osc.start();
+                setTimeout(function(){ osc.stop(); }, 400);
+                </script>
+            """
         else:
             clase_pantalla_fuel = "crt-normal"
-            msg_sistema_fuel = "📲 ACOPLE DE SUECCIÓN COMPROBADO\n\n Sistema en espera de comandos físicos.\n Ajuste el indicador 'TOTAL QTY SELECT' y pase los tanques a ON para iniciar."
+            msg_sistema_fuel = "📲 ACOPLE DE SUCCIÓN COMPROBADO\n\n Sistema en espera de comandos físicos.\n Ajuste el indicador 'TOTAL QTY SELECT' y pase los tanques a ON para iniciar."
 
-        # Interfaz de telemetría de rampa integrada
         pantalla_refuel_html = f"""
+        {audio_fuel_html}
+        {click_trigger_html}
         <div class='crt-easy-display {clase_pantalla_fuel}' style='color: #ffb700; border-color: #4b5563;'>
 <div class='crt-header' style='border-bottom-color: #78350f;'><span style='color: #38bdf8;'>MONITOR: PRESSURE REFUELING DATA</span><span style='color: #38bdf8;'>FAE-RAMP</span></div>
 📊 PARÁMETROS MECÁNICOS DE CONTROL DE SUMINISTRO:
