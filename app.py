@@ -80,32 +80,34 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
 # ==========================================
-# CONTROL DE AUDIO SIN BLOQUEO DE IFRAME
+# MOTOR DE AUDIO MEJORADO (Inyección Directa)
 # ==========================================
-# Usamos variables en session_state para disparar los efectos acústicos de forma nativa
 if "play_sound" not in st.session_state:
     st.session_state.play_sound = None
 
 def trigger_audio(sound_type):
     st.session_state.play_sound = sound_type
 
-# Inyección de componentes de audio dedicados si hay un trigger activo
+# Inyección activa basada en el estado actual
 if st.session_state.play_sound == "click":
     components.html("""
         <script>
-        var context = new (window.AudioContext || window.webkitAudioContext)();
-        var osc = context.createOscillator();
-        var gain = context.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(140, context.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(10, context.currentTime + 0.04);
-        gain.gain.setValueAtTime(0.5, context.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.04);
-        osc.connect(gain);
-        gain.connect(context.destination);
-        osc.start();
-        osc.stop(context.currentTime + 0.05);
+        window.parent.document.addEventListener('click', function() {
+            var context = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = context.createOscillator();
+            var gain = context.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(150, context.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(20, context.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.6, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(context.destination);
+            osc.start();
+            osc.stop(context.currentTime + 0.06);
+        }, { once: true });
         </script>
     """, height=0, width=0)
     st.session_state.play_sound = None
@@ -118,7 +120,7 @@ elif st.session_state.play_sound == "alarm":
         var gain = context.createGain();
         osc.type = 'sawtooth';
         osc.frequency.value = 450;
-        gain.gain.setValueAtTime(0.2, context.currentTime);
+        gain.gain.setValueAtTime(0.25, context.currentTime);
         osc.connect(gain);
         gain.connect(context.destination);
         osc.start();
@@ -133,10 +135,10 @@ elif st.session_state.play_sound == "fuel_ok":
         var context = new (window.AudioContext || window.webkitAudioContext)();
         var osc = context.createOscillator();
         osc.type = 'sine';
-        osc.frequency.value = 580;
+        osc.frequency.value = 600;
         osc.connect(context.destination);
         osc.start();
-        setTimeout(function(){ osc.stop(); }, 400);
+        setTimeout(function(){ osc.stop(); }, 500);
         </script>
     """, height=0, width=0)
     st.session_state.play_sound = None
@@ -492,7 +494,6 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             s_isol = "AISLADO [| AMBER |]" if st.session_state.step_d >= 1 else "CONECTADO [── GREEN ──]"
             pasos_completados = st.session_state.step_d == 7
 
-        # Configuración visual de la pantalla nativa de Streamlit para evitar cajas vacías
         if st.session_state.error_activo:
             color_borde = "#ef4444"
             color_fondo = "#2d1a1a"
@@ -509,7 +510,6 @@ if modulo_seleccionado == "MÓDULO I: SISTEMA ELÉCTRICO (ATA 24)":
             color_texto = "#38bdf8"
             status_cas = "📲 MODO EVALUACIÓN COMPLETA ACTIVO\n\n  Las instrucciones visuales han sido removidas de la pantalla CRT.\n  El operador militar debe accionar los interruptores guiándose por su O.T."
 
-        # RENDERIZADO SEGURO NATIVO DE LA PANTALLA CRT
         st.markdown(f"""
             <div style="font-family: 'Courier New', Courier, monospace; border: 4px solid {color_borde}; background-color: {color_fondo}; color: {color_texto}; padding: 20px; border-radius: 8px; min-height: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); white-space: pre-wrap;">
 <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #374151; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold;"><span>SISTEMA: HONEYWELL EASY PDU 1</span><span>MODO: EVALUACIÓN</span></div>
@@ -639,7 +639,6 @@ elif modulo_seleccionado == "MÓDULO II: SISTEMA DE COMBUSTIBLE (ATA 28)":
         else:
             msg_sistema_fuel = "📲 ACOPLE DE SUCCIÓN COMPROBADO\n\n Sistema en espera de comandos físicos.\n Ajuste el indicador 'TOTAL QTY SELECT' y pase los tanques a ON para iniciar."
 
-        # RECONSTRUCCIÓN HERMÉTICA DE LA PANTALLA REFUEL MONITOR NATIVA
         st.markdown(f"""
             <div style="font-family: 'Courier New', Courier, monospace; border: 4px solid #4b5563; background-color: #000000; color: #ffb700; padding: 20px; border-radius: 8px; min-height: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); white-space: pre-wrap;">
 <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #78350f; padding-bottom: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: bold;"><span style="color: #38bdf8;">MONITOR: PRESSURE REFUELING DATA</span><span style="color: #38bdf8;">FAE-RAMP</span></div>
