@@ -7,6 +7,8 @@ st.set_page_config(page_title="Falcon 7X Flight Deck - GTAE", page_icon="✈️"
 # ==============================================================================
 # SCRIPT DE AUDIO INSTANTÁNEO Y ENTORNO GLOBAL
 # ==============================================================================
+# Este componente inyecta un sintetizador de audio directamente en la ventana principal
+# para que cada botón reaccione acústicamente en tiempo real al tacto del operador.
 components.html("""
     <script>
     const parentDoc = window.parent.document;
@@ -258,48 +260,9 @@ elif st.session_state.audio_alarma == "carga_completa":
     """, height=0, width=0)
     st.session_state.audio_alarma = None
 
-
 # ==============================================================================
-# INTERFAZ DE INGRESO DE SEGURIDAD (PORTADA CON FOTO OFICIAL)
-# ==============================================================================
-if "autenticado" not in st.session_state:
-    st.session_state.autenticado = False
-
-if not st.session_state.autenticado:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    _, col_login, _ = st.columns([1, 1.4, 1])
-    
-    with col_login:
-        st.markdown("""
-            <div style='background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #3b82f6; padding: 35px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);'>
-                <h1 style='color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; font-family: monospace;'>FLIGHT DECK PANEL SIMULATOR</h1>
-                <h3 style='color: #3b82f6; font-size: 1.1rem; margin-bottom: 25px; font-family: monospace;'>FALCON 7X - GTAE</h3>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Imagen real del Falcon 7X presidencial provista por el usuario
-        st.image("https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1200&auto=format&fit=crop", 
-                 caption="Fuerza Aérea Ecuatoriana - Grupo de Transporte Aéreo Especial", use_container_width=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        with st.form("credenciales_cabina"):
-            st.markdown("<h5 style='text-align: center; color: #94a3b8;'>🔒 CONTROL DE ACCESO MILITAR</h5>", unsafe_allow_html=True)
-            txt_user = st.text_input("Identificador Técnico:", placeholder="gtae_operator")
-            txt_pass = st.text_input("Clave de Bloqueo:", type="password", placeholder="••••••••")
-            btn_acceso = st.form_submit_button("INGRESAR A LOS SISTEMAS")
-            
-            if btn_acceso:
-                if txt_user == "gtae" and txt_pass == "7X2026":
-                    st.session_state.autenticado = True
-                    st.rerun()
-                else:
-                    st.error("Credenciales incorrectas. Origen de datos no autorizado.")
-    st.stop()
-
-
-# ==========================================
 # SEPARACIÓN POR ENTORNO (Pilotos vs Técnicos)
-# ==========================================
+# ==============================================================================
 with st.sidebar:
     st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ AVIONICS SIDEBAR</h4>", unsafe_allow_html=True)
     st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
@@ -338,13 +301,12 @@ if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.s
         st.session_state.audio_alarma = "carga_completa"
     st.rerun()
 
-
 # ------------------------------------------------------------------------------
-# PANTALLA EXCLUSIVA: PROCEDIMIENTOS OPERATIVOS (PILOTOS - 3 MOTORES CON RELOJES)
+# PANTALLA EXCLUSIVA: PROCEDIMIENTOS OPERATIVOS (PILOTOS - 3 MOTORES CON RELOJES REALES)
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
-    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Simulación de Arranque Autónomo de los 3 Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS (CODDE 2)</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Fases de Arranque Hidroneumático - Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
 
     html_triple_engine_clocks = """
     <div style="background-color: #04070e; border: 5px solid #334155; padding: 22px; border-radius: 8px; color: #38bdf8; font-family: 'Courier New', monospace;">
@@ -398,9 +360,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
 
         <div style="border-top: 1px dashed #334155; margin-top: 20px; padding-top: 15px;">
             <div style="font-weight: bold; color: #fbbf24;">🔔 CREW ALERTING SYSTEM (CAS) DISPLAY FEED:</div>
-            <div id="cas_box" style="color:#38bdf8; font-size:0.85rem; margin-top:5px; font-weight:bold; background:#071220; padding:10px; border-radius:4px;">
-                🟢 SYSTEMS GENERAL RUN NOMINAL\n Motores monitoreados dentro de límites.
-            </div>
+            <div id="cas_box" style="color:#38bdf8; font-size:0.85rem; margin-top:5px; font-weight:bold; background:#071220; padding:10px; border-radius:4px; white-space: pre-wrap;">🟢 SYSTEMS GENERAL RUN NOMINAL\nMotores monitoreados dentro de límites. El flujo cumple la directiva 03-05-10.</div>
         </div>
     </div>
 
@@ -433,11 +393,11 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
             el.innerText = engines[idx].lever ? "RUN" : "SHUTOFF";
             el.style.background = engines[idx].lever ? "#22c55e" : "#7f1d1d";
             
-            // Lógica de detección de Hot Start por inyección prematura
+            // Lógica oficial CODDE 2: Detección de Hot Start por inyección prematura
             if(engines[idx].lever && engines[idx].phase === "CRANK" && engines[idx].n2 < 15.0) {
                 engines[idx].phase = "FAIL";
                 document.getElementById("box_" + idx).style.borderColor = "#ef4444";
-                document.getElementById("cas_box").innerHTML = "🚨 ALERT CAS: HOT START IN ENGINE " + (idx+1) + "!<br> Combustible inyectado prematuramente con rotación N2 inferior al 15% de ignición.";
+                document.getElementById("cas_box").innerHTML = "🚨 ALERT CAS: HOT START IN ENGINE " + (idx+1) + "!<br> Combustible inyectado prematuramente con rotación N2 inferior al 15% (Ignición bloqueada).";
                 document.getElementById("cas_box").style.color = "#ef4444";
                 playAlarmSound();
             }
@@ -505,7 +465,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
         }, 40);
     </script>
     """
-    components.html(html_triple_engine_clocks, height=650)
+    components.html(html_triple_clocks, height=650)
 
 
 # ------------------------------------------------------------------------------
@@ -558,7 +518,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
                 if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.fase_e == 11: st.session_state.fase_e = 12
                     else: forzar_alarma("LH MASTER activado de forma prematura fuera de la secuencia técnica.")
-                else: forzar_alarma("LH MASTER se mantiene enclavado de manera automática en esta fase.")
+                else: forzar_alarma("LH MASTER se mantiene enclavado de manera automática en esta phase.")
                 st.rerun()
             luz = "<div class='anunciador-verde'>ON</div>" if (procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e >= 12) or procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" else "<div class='anunciador-amber'>OFF</div>"
             st.markdown(luz, unsafe_allow_html=True)
@@ -697,7 +657,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
                     else: forzar_alarma("Línea física acoplada fuera del orden de prevuelo.")
                 else:
                     if st.session_state.fase_d == 5: st.session_state.fase_d = 6
-                    else: forzar_alarma("Desconexión física del mazo de cables sin deponer la planta eléctrica.")
+                    else: forzar_alarma("Desconexión física del mazo de cables sin deponer la planta eléctrica de rampa.")
                 st.rerun()
             luz = "<div class='anunciador-verde'>CONECTADO</div>" if (st.session_state.fase_e >= 1) or (procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" and st.session_state.fase_d < 6) else "<div class='anunciador-apagado'>DESCONECTADO</div>"
             st.markdown(luz, unsafe_allow_html=True)
@@ -723,10 +683,10 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
             
         with grid_rampa[3]:
-            if st.button("⚙️ FRENO PARQUEO", key="freno_p"):
+            if st.button("⚙️ CONTROL FRENO PARQUEO", key="freno_p"):
                 if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.fase_e == 3: st.session_state.fase_e = 4
-                    else: forzar_alarma("Freno de estacionamiento ignorado; riesgo de desplazamiento estructural.")
+                    else: forzar_alarma("Freno de estacionamiento ignorado; riesgo de desplazamiento estructural en rampa.")
                 st.rerun()
             luz = "<div class='anunciador-verde'>ENGANCHADO</div>" if (st.session_state.fase_e >= 4) or procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" else "<div class='anunciador-apagado'>LIBERADO</div>"
             st.markdown(luz, unsafe_allow_html=True)
@@ -740,7 +700,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
             st.markdown(luz_c, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        # BOTÓN ORIGINAL REESTABLECIDO OPERATIVO AL 100%
+        # BOTÓN REINICIO OPERATIVO RESTAURADO AL 100%
         if st.button("🚨 CORREGIR / REINICIAR EVALUACIÓN", key="btn_master_reset"):
             st.session_state.fase_e = 0
             st.session_state.fase_d = 0
@@ -792,7 +752,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
             status_easydisplay = "⚡ SYSTEMS STATUS: ENTORNO INTEGRADO CORRECTAMENTE\n\n  El procedimiento cumple al 100% las normativas técnicas e instrucciones del manual Dassault."
         else:
             borde_crt = "#475569"; fondo_crt = "#030712"; texto_crt = "#38bdf8"
-            status_easydisplay = "📲 MONITOR DE EVALUACIÓN TÁCTICA ACTIVO\n\n  Sistemas de telemetría a la espera de conmutación física en el overhead."
+            status_easydisplay = f"📲 MONITOR DE EVALUACIÓN TÁCTICA ACTIVO\n\nFase Eléctrica Actual: Paso {st.session_state.fase_e}/12"
 
         st.markdown(f"""
             <div class="pantalla-mfd" style="border: 5px solid {borde_crt}; background-color: {fondo_crt}; color: {texto_crt};">
