@@ -283,10 +283,10 @@ if not st.session_state.autenticado:
                  caption="Grupo de Transporte Aéreo Especial - FAE", use_container_width=True)
         
         with st.form("credenciales_cabina"):
-            st.markdown("<h5 style='text-align: center; color: #94a3b8;'>🔒 CONTROL DE SOBERANÍA Y ACCESO</h5>", unsafe_allow_html=True)
+            st.markdown("<h5 style='text-align: center; color: #94a3b8;'>🔒 CONTROL DE ACCESO</h5>", unsafe_allow_html=True)
             txt_user = st.text_input("Identificador Técnico:", placeholder="gtae_operator")
             txt_pass = st.text_input("Clave de Bloqueo:", type="password", placeholder="••••••••")
-            btn_acceso = st.form_submit_button("CONECTAR SISTEMAS EMBARCADOS")
+            btn_acceso = st.form_submit_button("INGRESAR A LOS SISTEMAS")
             
             if btn_acceso:
                 if txt_user == "gtae" and txt_pass == "7X2026":
@@ -336,7 +336,7 @@ if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.s
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
     st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>OVERHEAD COCKPIT PANEL</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Simulación Estructural Tridimensional de la Planta de Distribución Eléctrica</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Panel de Distribución Eléctrica</p>", unsafe_allow_html=True)
     
     procedimiento = st.radio(
         "⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:",
