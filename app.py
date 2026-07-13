@@ -261,28 +261,28 @@ elif st.session_state.audio_alarma == "carga_completa":
     st.session_state.audio_alarma = None
 
 # ==============================================================================
-# SEPARACIÓN POR ENTORNO (Pilotos vs Técnicos)
+# SELECCIÓN GLOBAL DE INTERFAZ (PILOTOS VS MANTENIMIENTO)
 # ==============================================================================
 with st.sidebar:
-    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ AVIONICS SIDEBAR</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ MANDO DE INSTRUCCIÓN</h4>", unsafe_allow_html=True)
     st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
     if st.button("🔒 DESCONECTAR CABINA"):
         st.session_state.autenticado = False
         st.rerun()
     st.markdown("---")
     
-    tipo_procedimiento = st.sidebar.radio(
-        "TIPO DE PROCEDIMIENTO:",
+    entorno_seleccionado = st.radio(
+        "PERFIL OPERACIONAL:",
         ["✈️ PROCEDIMIENTOS OPERATIVOS (PILOTOS)", "🔧 PROCEDIMIENTOS DE MANTENIMIENTO (TÉCNICOS)"]
     )
-
-    if tipo_procedimiento == "✈️ PROCEDIMIENTOS OPERATIVOS (PILOTOS)":
-        opcion_sistema = "MÓDULO III: ENCENDIDO DE MOTORES"
-    else:
+    
+    if entorno_seleccionado == "🔧 PROCEDIMIENTOS DE MANTENIMIENTO (TÉCNICOS)":
         opcion_sistema = st.radio(
             "CONSOLA INTERACTIVA TÉCNICA:",
             ["MÓDULO I: ENERGIZACIÓN (ATA 24)", "MÓDULO II: COMBUSTIBLE (ATA 28)"]
         )
+    else:
+        opcion_sistema = "MÓDULO III: ENCENDIDO DE MOTORES"
 
 # Inicialización de memorias operacionales de rampa
 if "combustible_actual" not in st.session_state: st.session_state.combustible_actual = 1150
@@ -292,7 +292,7 @@ if "valvula_ctr" not in st.session_state: st.session_state.valvula_ctr = "OFF"
 if "valvula_der" not in st.session_state: st.session_state.valvula_der = "OFF"
 if "bombeo_activo" not in st.session_state: st.session_state.bombeo_activo = False
 
-# Simulación cíclica del paso de combustible bajo presión
+# Simulación del paso de combustible bajo presión
 if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.session_state.combustible_objetivo:
     st.session_state.combustible_actual += 400
     if st.session_state.combustible_actual >= st.session_state.combustible_objetivo:
@@ -302,11 +302,11 @@ if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.s
     st.rerun()
 
 # ------------------------------------------------------------------------------
-# PANTALLA EXCLUSIVA: PROCEDIMIENTOS OPERATIVOS (PILOTOS - 3 MOTORES CON RELOJES REALES)
+# PANTALLA: PROCEDIMIENTOS OPERATIVOS - ARRANCADO TRIPLE DE MOTORES (MÓDULO III)
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
-    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS (CODDE 2)</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Fases de Arranque Hidroneumático - Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Simulación de Arranque Autónomo de los 3 Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
 
     html_triple_engine_clocks = """
     <div style="background-color: #04070e; border: 5px solid #334155; padding: 22px; border-radius: 8px; color: #38bdf8; font-family: 'Courier New', monospace;">
@@ -360,7 +360,9 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
 
         <div style="border-top: 1px dashed #334155; margin-top: 20px; padding-top: 15px;">
             <div style="font-weight: bold; color: #fbbf24;">🔔 CREW ALERTING SYSTEM (CAS) DISPLAY FEED:</div>
-            <div id="cas_box" style="color:#38bdf8; font-size:0.85rem; margin-top:5px; font-weight:bold; background:#071220; padding:10px; border-radius:4px; white-space: pre-wrap;">🟢 SYSTEMS GENERAL RUN NOMINAL\nMotores monitoreados dentro de límites. El flujo cumple la directiva 03-05-10.</div>
+            <div id="cas_box" style="color:#38bdf8; font-size:0.85rem; margin-top:5px; font-weight:bold; background:#071220; padding:10px; border-radius:4px;">
+                🟢 SYSTEMS GENERAL RUN NOMINAL\n Motores monitoreados dentro de límites.
+            </div>
         </div>
     </div>
 
@@ -393,11 +395,11 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
             el.innerText = engines[idx].lever ? "RUN" : "SHUTOFF";
             el.style.background = engines[idx].lever ? "#22c55e" : "#7f1d1d";
             
-            // Lógica oficial CODDE 2: Detección de Hot Start por inyección prematura
+            // Lógica de detección de Hot Start por inyección prematura
             if(engines[idx].lever && engines[idx].phase === "CRANK" && engines[idx].n2 < 15.0) {
                 engines[idx].phase = "FAIL";
                 document.getElementById("box_" + idx).style.borderColor = "#ef4444";
-                document.getElementById("cas_box").innerHTML = "🚨 ALERT CAS: HOT START IN ENGINE " + (idx+1) + "!<br> Combustible inyectado prematuramente con rotación N2 inferior al 15% (Ignición bloqueada).";
+                document.getElementById("cas_box").innerHTML = "🚨 ALERT CAS: HOT START IN ENGINE " + (idx+1) + "!<br> Combustible inyectado prematuramente con rotación N2 inferior al 15% de ignición.";
                 document.getElementById("cas_box").style.color = "#ef4444";
                 playAlarmSound();
             }
@@ -465,7 +467,8 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
         }, 40);
     </script>
     """
-    components.html(html_triple_clocks, height=650)
+    # RENDERIZADO CORREGIDO CON EL NOMBRE EXACTO DE LA VARIABLE ASIGNADA
+    components.html(html_triple_engine_clocks, height=650)
 
 
 # ------------------------------------------------------------------------------
@@ -518,7 +521,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
                 if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.fase_e == 11: st.session_state.fase_e = 12
                     else: forzar_alarma("LH MASTER activado de forma prematura fuera de la secuencia técnica.")
-                else: forzar_alarma("LH MASTER se mantiene enclavado de manera automática en esta phase.")
+                else: forzar_alarma("LH MASTER se mantiene enclavado de manera automática en esta fase.")
                 st.rerun()
             luz = "<div class='anunciador-verde'>ON</div>" if (procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e >= 12) or procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" else "<div class='anunciador-amber'>OFF</div>"
             st.markdown(luz, unsafe_allow_html=True)
@@ -657,7 +660,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
                     else: forzar_alarma("Línea física acoplada fuera del orden de prevuelo.")
                 else:
                     if st.session_state.fase_d == 5: st.session_state.fase_d = 6
-                    else: forzar_alarma("Desconexión física del mazo de cables sin deponer la planta eléctrica de rampa.")
+                    else: forzar_alarma("Desconexión física del mazo de cables sin deponer la planta eléctrica.")
                 st.rerun()
             luz = "<div class='anunciador-verde'>CONECTADO</div>" if (st.session_state.fase_e >= 1) or (procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" and st.session_state.fase_d < 6) else "<div class='anunciador-apagado'>DESCONECTADO</div>"
             st.markdown(luz, unsafe_allow_html=True)
@@ -683,10 +686,10 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
             st.markdown(luz, unsafe_allow_html=True)
             
         with grid_rampa[3]:
-            if st.button("⚙️ CONTROL FRENO PARQUEO", key="freno_p"):
+            if st.button("⚙️ FRENO PARQUEO", key="freno_p"):
                 if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
                     if st.session_state.fase_e == 3: st.session_state.fase_e = 4
-                    else: forzar_alarma("Freno de estacionamiento ignorado; riesgo de desplazamiento estructural en rampa.")
+                    else: forzar_alarma("Freno de estacionamiento ignorado; riesgo de desplazamiento estructural.")
                 st.rerun()
             luz = "<div class='anunciador-verde'>ENGANCHADO</div>" if (st.session_state.fase_e >= 4) or procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" else "<div class='anunciador-apagado'>LIBERADO</div>"
             st.markdown(luz, unsafe_allow_html=True)
