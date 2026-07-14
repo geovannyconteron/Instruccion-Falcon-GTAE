@@ -43,7 +43,7 @@ components.html("""
 """, height=0, width=0)
 
 # ==============================================================================
-# DISEÑO TRIDIMENSIONAL SKEUOMÓRFICO (CABINA REALISTA CSS)
+# DISEÑO TRIDIMENSIONAL SKEUOMÓRFICO (CABINA REALISTA)
 # ==============================================================================
 st.markdown("""
     <style>
@@ -144,7 +144,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# ALARMAS Y ADVERTENCIAS SONORAS TRAS RECARGAS DE MANTENIMIENTO
+# ALARMAS Y ADVERTENCIAS SONORAS TRAS RECARGA DE SEGURIDAD
 # ==============================================================================
 if "audio_alarma" not in st.session_state: st.session_state.audio_alarma = None
 
@@ -178,15 +178,18 @@ elif st.session_state.audio_alarma == "carga_completa":
     st.session_state.audio_alarma = None
 
 # ==============================================================================
-# SEPARACIÓN POR ENTORNO (Pilotos vs Técnicos)
+# BARRA LATERAL - SEPARACIÓN ROTATIVA DE ROLES Y AMBIENTES
 # ==============================================================================
 with st.sidebar:
-    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ MANDO DE INSTRUCCIÓN</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ AVIONICS SIDEBAR</h4>", unsafe_allow_html=True)
     st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
+    if st.button("🔒 DESCONECTAR CABINA"):
+        st.session_state.autenticado = False
+        st.rerun()
     st.markdown("---")
     
     tipo_procedimiento = st.radio(
-        "PERFIL DE EVALUACIÓN:",
+        "ENTORNO DE SIMULACIÓN:",
         ["✈️ PROCEDIMIENTOS OPERATIVOS (PILOTOS)", "🔧 PROCEDIMIENTOS DE MANTENIMIENTO (TÉCNICOS)"]
     )
 
@@ -198,7 +201,7 @@ with st.sidebar:
             ["MÓDULO I: ENERGIZACIÓN (ATA 24)", "MÓDULO II: COMBUSTIBLE (ATA 28)"]
         )
 
-# Inicializaciones base de memoria operacional
+# Inicialización de memorias operacionales e historial de pasos técnicos
 if "fase_e" not in st.session_state: st.session_state.fase_e = 0
 if "fase_d" not in st.session_state: st.session_state.fase_d = 0
 if "falla_procedimiento" not in st.session_state: st.session_state.falla_procedimiento = False
@@ -216,22 +219,23 @@ if "p_bleed" not in st.session_state: st.session_state.p_bleed = "CLOSED"
 if "p_boost" not in st.session_state: st.session_state.p_boost = "OFF"
 if "p_eng" not in st.session_state: st.session_state.p_eng = ["STBY", "STBY", "STBY"]
 if "p_lever" not in st.session_state: st.session_state.p_lever = ["SHUTOFF", "SHUTOFF", "SHUTOFF"]
-if "p_cas" not in st.session_state: st.session_state.p_cas = "🟢 SYSTEMS GENERAL RUN NOMINAL\nMotores monitoreados dentro de límites estructurales."
+if "p_cas" not in st.session_state: st.session_state.p_cas = "🟢 SYSTEMS GENERAL RUN NOMINAL\nMotores y líneas de presión monitoreados según el perfil Dassault EASy."
 
-# Simulación de recarga de rampa (Módulo II)
+# Paso de combustible (Módulo II)
 if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.session_state.combustible_objetivo:
     st.session_state.combustible_actual += 400
     if st.session_state.combustible_actual >= st.session_state.combustible_objetivo:
         st.session_state.combustible_actual = st.session_state.combustible_objetivo
         st.session_state.bombeo_activo = False
+        st.session_state.audio_alarma = "carga_completa"
     st.rerun()
 
 # ------------------------------------------------------------------------------
-# MÓDULO III: PROCEDIMIENTOS OPERATIVOS CON PANTALLA ELECTRÓNICA COMPLETA DE ANUNCIOS
+# MÓDULO III: PROCEDIMIENTOS OPERATIVOS CON CONTROL INTEGRAL DEL CODDE 2
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
     st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS (CODDE 2)</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Flujo de Cabina Completa de los 3 Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Flujo Completo de Cabina Cruzada - 3 Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
 
     col_mandos_vuelo, col_display_honeywell = st.columns([1.2, 1])
 
@@ -242,13 +246,13 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
         st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>Auxiliary Power Unit & Bleed Air (ATA 36 / 49)</div>", unsafe_allow_html=True)
         c_apu = st.columns(2)
         with c_apu[0]:
-            if st.button("APU MASTER"):
+            if st.button("APU MASTER SWITCH"):
                 st.session_state.p_apu = "RUN" if st.session_state.p_apu == "OFF" else "OFF"
                 if st.session_state.p_apu == "OFF": st.session_state.p_bleed = "CLOSED"
                 st.rerun()
             st.markdown("<div class='anunciador-verde'>ON (100%)</div>" if st.session_state.p_apu == "RUN" else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
         with c_apu[1]:
-            if st.button("APU BLEED AIR VALVE"):
+            if st.button("APU BLEED VALVE"):
                 if st.session_state.p_apu == "RUN":
                     st.session_state.p_bleed = "OPEN" if st.session_state.p_bleed == "CLOSED" else "CLOSED"
                 st.rerun()
@@ -271,10 +275,10 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                     if st.session_state.p_bleed == "OPEN":
                         st.session_state.p_eng[i] = "CRANK"
                         if st.session_state.p_lever[i] == "RUN":
-                            st.session_state.p_cas = f"🚨 ALERT CAS: HOT START IN ENGINE {i+1}!\n Combustible inyectado prematuramente con rotación N2 inferior al 15% de ignición neumática."
+                            st.session_state.p_cas = f"🚨 ALERT CAS: HOT START IN ENGINE {i+1}!\n Combustible inyectado de forma prematura con rotación N2 inferior al 15% reglamentario."
                             st.session_state.audio_alarma = "alarma_critica"
                     else:
-                        st.session_state.p_cas = f"🚨 ALERT CAS: BLEED AIR FAULT ENGINE {i+1}!\n No hay presión neumática en las líneas de sangrado (APU BLEED CLOSED)."
+                        st.session_state.p_cas = f"🚨 ALERT CAS: BLEED AIR FAULT ENGINE {i+1}!\n No se detecta presión neumática en las líneas de sangrado (APU BLEED CLOSED)."
                         st.session_state.audio_alarma = "alarma_critica"
                     st.rerun()
                 st.markdown(f"<div class='anunciador-amber'>{st.session_state.p_eng[i]}</div>" if st.session_state.p_eng[i] != "STBY" else "<div class='anunciador-apagado'>STBY</div>", unsafe_allow_html=True)
@@ -289,13 +293,13 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                     st.session_state.p_lever[i] = "RUN" if st.session_state.p_lever[i] == "SHUTOFF" else "SHUTOFF"
                     if st.session_state.p_lever[i] == "RUN":
                         if st.session_state.p_boost == "OFF":
-                            st.session_state.p_cas = f"🚨 ALERT CAS: FUEL PUMP FAULT ENGINE {i+1}!\n Intento de inyección de combustible sin activar las Boost Pumps (ATA 28)."
+                            st.session_state.p_cas = f"🚨 ALERT CAS: FUEL PUMP FAULT ENGINE {i+1}!\n Intento de inyección de mezcla sin activar las Boost Pumps del panel ATA 28."
                             st.session_state.audio_alarma = "alarma_critica"
                         elif st.session_state.p_eng[i] == "CRANK":
                             st.session_state.p_eng[i] = "RUN IDLE"
                             st.session_state.p_cas = f"🟩 SYSTEMS STATUS: ENGINE {i+1} ENGAGED IN IDLE RANGES NOMINAL."
                         else:
-                            st.session_state.p_cas = f"🚨 ALERT CAS: HOT START IN ENGINE {i+1}!\n Válvula de corte abierta sin flujo ni rotación neumática previa."
+                            st.session_state.p_cas = f"🚨 ALERT CAS: HOT START IN ENGINE {i+1}!\n Válvula de corte abierta sin flujo ni rotación neumática previa de la turbina."
                             st.session_state.audio_alarma = "alarma_critica"
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -310,7 +314,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
     with col_display_honeywell:
         st.markdown("### 📺 Honeywell EASy Avionics Display")
         
-        # Renderizado de agujas analógicas
+        # Renderizado de agujas analógicas de los 3 motores en paralelo
         html_clocks = ""
         for i in range(3):
             n1 = 24.2 if st.session_state.p_eng[i] == "RUN IDLE" else 0.0
@@ -343,7 +347,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
 
         st.markdown(f"""
             <div class="pantalla-mfd" style="border: 5px solid {borde_crt}; background-color: {fondo_crt}; color: {texto_crt}; min-height:220px; padding:15px;">
-<div style="border-bottom: 2px solid #334155; padding-bottom: 5px; margin-bottom: 15px; font-weight: bold;"><span>HONEYWELL PDU: DISPLAY DE CABINA</span><span>FLIGHT shield</span></div>
+<div style="border-bottom: 2px solid #334155; padding-bottom: 5px; margin-bottom: 15px; font-weight: bold;"><span>HONEYWELL PDU: DISPLAY DE CABINA</span><span>FLIGHT FEED</span></div>
 📋 ESCANEO DE SISTEMAS EN TIEMPO REAL (ATA 70 / 36 / 28):
  • UNIDAD DE POTENCIA APU      : {st.session_state.p_apu}
  • VÁLVULA SANGRADO APU BLEED  : {st.session_state.p_bleed}
@@ -356,171 +360,175 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
         """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# MÓDULOS DE MANTENIMIENTO TÉCNICO COMPLETO RESTAURADOS AL 100%
+# MÓDULOS DE MANTENIMIENTO TÉCNICO COMPLETO (RESTAURADO E INTACTO SIN ERRORES)
 # ------------------------------------------------------------------------------
-else:
-    st.title("🔧 Pantalla de Procedimientos de Mantenimiento (Técnicos)")
-    st.markdown("---")
+elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
+    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>OVERHEAD COCKPIT PANEL</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Panel de Distribución Eléctrica</p>", unsafe_allow_html=True)
     
-    if modulo_activo == "MÓDULO I: DISTRIBUCIÓN ELÉCTRICA (ATA 24)":
-        st.subheader("Módulo I: Distribución Eléctrica y Secuenciación Avanzada de Barras")
-        procedimiento = st.radio("⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:", ["ENERGIZACIÓN COMPLETA (COLD OPERATIONS)", "DESENERGIZACIÓN COMPLETA (SHUTDOWN)"], horizontal=True)
+    procedimiento = st.radio(
+        "⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:",
+        ["ENERGIZACIÓN COMPLETA (COLD OPERATIONS)", "DESENERGIZACIÓN COMPLETA (SHUTDOWN)"],
+        horizontal=True
+    )
+
+    col_fisica_panel, col_telemetria_pdu = st.columns([1.3, 1])
+    with col_fisica_panel:
+        st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>⚡ DC SUPPLY PANEL (OVERHEAD UPPER ROW) ⚡</div>", unsafe_allow_html=True)
         
-        if "procedimiento_previo" not in st.session_state: st.session_state.procedimiento_previo = procedimiento
-        elif st.session_state.procedimiento_previo != procedimiento:
+        grid_sup = st.columns(8)
+        with grid_sup[0]:
+            st.button("GALLEY MSTR", disabled=True, key="gm_m")
+            st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
+        with grid_sup[1]:
+            if st.button("LH MSTR", key="lm_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
+                    if st.session_state.fase_e == 11: st.session_state.fase_e = 12
+                    else: forzar_alarma("LH MASTER activado de forma prematura fuera de la secuencia técnica.")
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>ON</div>" if st.session_state.fase_e >= 12 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
+        with grid_sup[2]:
+            if st.button("LH INIT", key="lh_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 7: st.session_state.fase_e = 8
+                st.rerun()
+            st.markdown("<div class='anunciador-apagado'>RUN</div>" if st.session_state.fase_e >= 8 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
+        with grid_sup[3]:
+            if st.button("BUS TIE", key="bt_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 6: st.session_state.fase_e = 7
+                st.rerun()
+            st.markdown("<div class='anunciador-amber'>TIED</div>" if st.session_state.fase_e >= 7 else "<div class='anunciador-apagado'>AUTO</div>", unsafe_allow_html=True)
+        with grid_sup[4]:
+            if st.button("RH INIT", key="rh_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 7: st.session_state.fase_e = 8
+                st.rerun()
+            st.markdown("<div class='anunciador-apagado'>RUN</div>" if st.session_state.fase_e >= 8 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
+        with grid_sup[5]:
+            if st.button("RH MSTR", key="rhm_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 11: st.session_state.fase_e = 12
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>ON</div>" if st.session_state.fase_e >= 12 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
+        with grid_sup[6]:
+            if st.button("CABIN MSTR", key="cb_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 9: st.session_state.fase_e = 10
+                st.rerun()
+            st.markdown("<div class='anunciador-amber'>OFF</div>" if st.session_state.fase_e >= 10 else "<div class='anunciador-verde'>ON</div>", unsafe_allow_html=True)
+        with grid_sup[7]:
+            if st.button("EXT PWR", key="ep_m"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 8: st.session_state.fase_e = 9
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>ONLINE</div>" if st.session_state.fase_e >= 9 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<div class='linea-tactica'></div>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🔋 GENERATION & BATTERIES</div>", unsafe_allow_html=True)
+        grid_inf = st.columns(8)
+        with grid_inf[0]: st.button("GEN 1", disabled=True, key="g1"); st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
+        with grid_inf[1]:
+            if st.button("LH ISOL", key="lhi"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 10: st.session_state.fase_e = 11
+                st.rerun()
+            st.markdown("<div class='anunciador-apagado'>TIED</div>" if st.session_state.fase_e >= 11 else "<div class='anunciador-amber'>ISOL</div>", unsafe_allow_html=True)
+        with grid_inf[2]:
+            if st.button("BAT 1", key="b1"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 4: st.session_state.fase_e = 5
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.fase_e >= 5 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
+        with grid_inf[3]:
+            if st.button("BAT 2", key="b2"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 4: st.session_state.fase_e = 5
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.fase_e >= 5 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<div class='linea-tactica'></div>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🔧 CONFIGURACIÓN Y ACOPLE DE PLANTA EXTERNA</div>", unsafe_allow_html=True)
+        grid_rampa = st.columns(5)
+        with grid_rampa[0]:
+            if st.button("🔌 RECEPTÁCULO GPU", key="rec"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 0: st.session_state.fase_e = 1
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>CONECTADO</div>" if st.session_state.fase_e >= 1 else "<div class='anunciador-apagado'>DESCONECTADO</div>", unsafe_allow_html=True)
+        with grid_rampa[1]:
+            if st.button("⚡ REGULADOR TENSIÓN TIERRA", key="pot"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 1: st.session_state.fase_e = 2
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>28.0 VDC OK</div>" if st.session_state.fase_e >= 2 else "<div class='anunciador-apagado'>0.0 VDC</div>", unsafe_allow_html=True)
+        with grid_rampa[2]:
+            if st.button("🎛️ SWITCH EXTERNO GPU", key="sw"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 2: st.session_state.fase_e = 3
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>LÍNEA ONLINE</div>" if st.session_state.fase_e >= 3 else "<div class='anunciador-apagado'>LÍNEA OFF</div>", unsafe_allow_html=True)
+        with grid_rampa[3]:
+            if st.button("⚙️ CONTROL FRENO PARQUEO", key="fr"):
+                if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 3: st.session_state.fase_e = 4
+                st.rerun()
+            st.markdown("<div class='anunciador-verde'>ENGANCHADO</div>" if st.session_state.fase_e >= 4 else "<div class='anunciador-apagado'>LIBERADO</div>", unsafe_allow_html=True)
+        with grid_rampa[4]:
+            if st.button("🚪 COMPUERTA RECEPT", key="compuerta_maint_ext"):
+                if procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" and st.session_state.fase_d == 6: st.session_state.fase_d = 7
+                st.rerun()
+            luz_c = "<div class='anunciador-apagado'>CERRADA</div>" if procedimiento == "DESENERGIZACIÓN COMPLETA (SHUTDOWN)" and st.session_state.fase_d >= 7 else "<div class='anunciador-verde'>ABIERTA</div>"
+            st.markdown(luz_c, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🚨 CORREGIR / REINICIAR EVALUACIÓN", key="btn_reset_maint"):
             st.session_state.fase_e = 0; st.session_state.fase_d = 0
             st.session_state.falla_procedimiento = False; st.session_state.descripcion_falla = ""
-            st.session_state.procedimiento_previo = procedimiento
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        col_fisica_panel, col_telemetria_pdu = st.columns([1.3, 1])
-        with col_fisica_panel:
-            st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
-            st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>⚡ DC SUPPLY PANEL (OVERHEAD UPPER ROW) ⚡</div>", unsafe_allow_html=True)
-            
-            grid_sup = st.columns(8)
-            with grid_sup[0]:
-                st.button("GALLEY MSTR", disabled=True, key="gm_m")
-                st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            with grid_sup[1]:
-                if st.button("LH MSTR", key="lm_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-                        if st.session_state.fase_e == 11: st.session_state.fase_e = 12
-                        else: forzar_alarma("LH MASTER activado de forma prematura fuera de la secuencia técnica.")
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>ON</div>" if st.session_state.fase_e >= 12 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
-            with grid_sup[2]:
-                if st.button("LH INIT", key="lh_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 7: st.session_state.fase_e = 8
-                    st.rerun()
-                st.markdown("<div class='anunciador-apagado'>RUN</div>" if st.session_state.fase_e >= 8 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
-            with grid_sup[3]:
-                if st.button("BUS TIE", key="bt_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 6: st.session_state.fase_e = 7
-                    st.rerun()
-                st.markdown("<div class='anunciador-amber'>TIED</div>" if st.session_state.fase_e >= 7 else "<div class='anunciador-apagado'>AUTO</div>", unsafe_allow_html=True)
-            with grid_sup[4]:
-                if st.button("RH INIT", key="rh_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 7: st.session_state.fase_e = 8
-                    st.rerun()
-                st.markdown("<div class='anunciador-apagado'>RUN</div>" if st.session_state.fase_e >= 8 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
-            with grid_sup[5]:
-                if st.button("RH MSTR", key="rhm_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 11: st.session_state.fase_e = 12
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>ON</div>" if st.session_state.fase_e >= 12 else "<div class='anunciador-amber'>OFF</div>", unsafe_allow_html=True)
-            with grid_sup[6]:
-                if st.button("CABIN MSTR", key="cb_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 9: st.session_state.fase_e = 10
-                    st.rerun()
-                st.markdown("<div class='anunciador-amber'>OFF</div>" if st.session_state.fase_e >= 10 else "<div class='anunciador-verde'>ON</div>", unsafe_allow_html=True)
-            with grid_sup[7]:
-                if st.button("EXT PWR", key="ep_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 8: st.session_state.fase_e = 9
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>ONLINE</div>" if st.session_state.fase_e >= 9 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+    with col_telemetria_pdu:
+        st.markdown("### 📺 Honeywell EASy Avionics Display")
+        borde_crt = "#ef4444" if st.session_state.falla_procedimiento else "#475569"
+        fondo_crt = "#200d0d" if st.session_state.falla_procedimiento else "#000000"
+        texto_crt = "#fca5a5" if st.session_state.falla_procedimiento else "#38bdf8"
+        status_easydisplay = f"🚨 CAS ALERT: ERROR PROCEDIMENTAL DETECTADO\n\n  REPORTE CRÍTICO: {st.session_state.descripcion_falla}" if st.session_state.falla_procedimiento else f"📲 MODO EVALUACIÓN ACTIVO\n\nFase Eléctrica Actual: Paso {st.session_state.fase_e}/12"
 
-            st.markdown("<div class='linea-tactica'></div>", unsafe_allow_html=True)
-            
-            st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🔋 GENERATION & BATTERIES</div>", unsafe_allow_html=True)
-            grid_inf = st.columns(8)
-            with grid_inf[0]: st.button("GEN 1", disabled=True, key="g1"); st.markdown("<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            with grid_inf[1]:
-                if st.button("LH ISOL", key="lhi"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 10: st.session_state.fase_e = 11
-                    st.rerun()
-                st.markdown("<div class='anunciador-apagado'>TIED</div>" if st.session_state.fase_e >= 11 else "<div class='anunciador-amber'>ISOL</div>", unsafe_allow_html=True)
-            with grid_inf[2]:
-                if st.button("BAT 1", key="b1"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 4: st.session_state.fase_e = 5
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.fase_e >= 5 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            with grid_inf[3]:
-                if st.button("BAT 2", key="b2"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 4: st.session_state.fase_e = 5
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.fase_e >= 5 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="pantalla-mfd" style="border: 5px solid {borde_crt}; background-color: {fondo_crt}; color: {texto_crt};">
+                <div style="border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold;"><span>HONEYWELL PDU: AVIONICS SHIELD</span></div>
+                {status_easydisplay}
+            </div>
+        """, unsafe_allow_html=True)
 
-            st.markdown("<div class='linea-tactica'></div>", unsafe_allow_html=True)
-            
-            st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🔧 CONFIGURACIÓN Y ACOPLE DE PLANTA EXTERNA</div>", unsafe_allow_html=True)
-            grid_rampa = st.columns(5)
-            with grid_rampa[0]:
-                if st.button("🔌 RECEPTÁCULO GPU", key="rec"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 0: st.session_state.fase_e = 1
+elif opcion_sistema == "MÓDULO II: COMBUSTIBLE (ATA 28)":
+    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PRESSURE FUELING PANEL</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Réplica Skeuomórfica del Dispositivo Físico de Rampa (Lbs)</p>", unsafe_allow_html=True)
+    
+    col_panel_comb, col_monitor_comb = st.columns([1.3, 1])
+    with col_panel_comb:
+        st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
+        st.markdown("<div class='subpanel-3d' style='background: linear-gradient(180deg, #242b35, #161b22); border: 3px solid #0f172a;'>", unsafe_allow_html=True)
+        st.markdown(f"<div class='display-digital-principal'>{st.session_state.combustible_actual:05d}</div>", unsafe_allow_html=True)
+        
+        grid_valvulas = st.columns(3)
+        with grid_valvulas[0]:
+            st.markdown("<div style='font-family: monospace; font-weight:bold;'>LEFT VALVE</div>", unsafe_allow_html=True)
+            st.session_state.valvula_izq = st.radio("V_Izq:", ["ON", "OFF"], index=1 if st.session_state.valvula_izq == "OFF" else 0, key="v1_r", label_visibility="collapsed")
+        with grid_valvulas[1]:
+            st.markdown("<div style='font-family: monospace; font-weight:bold;'>CENTER VALVE</div>", unsafe_allow_html=True)
+            st.session_state.valvula_ctr = st.radio("V_Ctr:", ["ON", "OFF"], index=1 if st.session_state.valvula_ctr == "OFF" else 0, key="v2_r", label_visibility="collapsed")
+        with grid_valvulas[2]:
+            st.markdown("<div style='font-family: monospace; font-weight:bold;'>RIGHT VALVE</div>", unsafe_allow_html=True)
+            st.session_state.valvula_der = st.radio("V_Der:", ["ON", "OFF"], index=1 if st.session_state.valvula_der == "OFF" else 0, key="v3_r", label_visibility="collapsed")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        cx_f1, cx_f2, _ = st.columns(3)
+        with cx_f1:
+            if st.button("🚀 INICIAR SUCCIÓN / REFUELING"):
+                if "ON" in [st.session_state.valvula_izq, st.session_state.valvula_ctr, st.session_state.valvula_der]:
+                    st.session_state.bombeo_activo = True
                     st.rerun()
-                st.markdown("<div class='anunciador-verde'>CONECTADO</div>" if st.session_state.fase_e >= 1 else "<div class='anunciador-apagado'>DESCONECTADO</div>", unsafe_allow_html=True)
-            with grid_rampa[1]:
-                if st.button("⚡ REGULADOR TENSIÓN TIERRA", key="pot"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 1: st.session_state.fase_e = 2
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>28.0 VDC OK</div>" if st.session_state.fase_e >= 2 else "<div class='anunciador-apagado'>0.0 VDC</div>", unsafe_allow_html=True)
-            with grid_rampa[2]:
-                if st.button("🎛️ SWITCH EXTERNO GPU", key="sw"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 2: st.session_state.fase_e = 3
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>LÍNEA ONLINE</div>" if st.session_state.fase_e >= 3 else "<div class='anunciador-apagado'>LÍNEA OFF</div>", unsafe_allow_html=True)
-            with grid_rampa[3]:
-                if st.button("⚙️ CONTROL FRENO PARQUEO", key="fr"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 3: st.session_state.fase_e = 4
-                    st.rerun()
-                st.markdown("<div class='anunciador-verde'>ENGANCHADO</div>" if st.session_state.fase_e >= 4 else "<div class='anunciador-apagado'>LIBERADO</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🚨 CORREGIR / REINICIAR EVALUACIÓN", key="btn_reset_maint"):
-                st.session_state.fase_e = 0; st.session_state.fase_d = 0
-                st.session_state.falla_procedimiento = False; st.session_state.descripcion_falla = ""
+        with cx_f2:
+            if st.button("⏹️ STOP FUELING (PAUSA)"):
+                st.session_state.bombeo_activo = False
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div></div></div>", unsafe_allow_html=True)
 
-        with col_telemetria_pdu:
-            st.markdown("### 📺 Honeywell EASy Avionics Display")
-            borde_crt = "#ef4444" if st.session_state.falla_procedimiento else "#475569"
-            fondo_crt = "#200d0d" if st.session_state.falla_procedimiento else "#000000"
-            texto_crt = "#fca5a5" if st.session_state.falla_procedimiento else "#38bdf8"
-            status_easydisplay = f"🚨 CAS ALERT: ERROR PROCEDIMENTAL DETECTADO\n\n  REPORTE CRÍTICO: {st.session_state.descripcion_falla}" if st.session_state.falla_procedimiento else f"📲 MODO EVALUACIÓN ACTIVO\n\nFase Eléctrica Actual: Paso {st.session_state.fase_e}/12"
-
-            st.markdown(f"""
-                <div class="pantalla-mfd" style="border: 5px solid {borde_crt}; background-color: {fondo_crt}; color: {texto_crt};">
-                    <div style="border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold;"><span>HONEYWELL PDU: AVIONICS SHIELD</span></div>
-                    {status_easydisplay}
-                </div>
-            """, unsafe_allow_html=True)
-
-    elif modulo_activo == "MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28)":
-        st.subheader("Módulo II: Panel de Abastecimiento de Combustible por Presión (Rampa)")
-        col_panel_comb, col_monitor_comb = st.columns([1.3, 1])
-        with col_panel_comb:
-            st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
-            st.markdown("<div class='subpanel-3d' style='background: linear-gradient(180deg, #242b35, #161b22); border: 3px solid #0f172a;'>", unsafe_allow_html=True)
-            st.markdown(f"<div class='display-digital-principal'>{st.session_state.combustible_actual:05d}</div>", unsafe_allow_html=True)
-            
-            grid_valvulas = st.columns(3)
-            with grid_valvulas[0]:
-                st.markdown("<div style='font-family: monospace; font-weight:bold;'>LEFT VALVE</div>", unsafe_allow_html=True)
-                st.session_state.valvula_izq = st.radio("V_Izq:", ["ON", "OFF"], index=1 if st.session_state.valvula_izq == "OFF" else 0, key="v1_r", label_visibility="collapsed")
-            with grid_valvulas[1]:
-                st.markdown("<div style='font-family: monospace; font-weight:bold;'>CENTER VALVE</div>", unsafe_allow_html=True)
-                st.session_state.valvula_ctr = st.radio("V_Ctr:", ["ON", "OFF"], index=1 if st.session_state.valvula_ctr == "OFF" else 0, key="v2_r", label_visibility="collapsed")
-            with grid_valvulas[2]:
-                st.markdown("<div style='font-family: monospace; font-weight:bold;'>RIGHT VALVE</div>", unsafe_allow_html=True)
-                st.session_state.valvula_der = st.radio("V_Der:", ["ON", "OFF"], index=1 if st.session_state.valvula_der == "OFF" else 0, key="v3_r", label_visibility="collapsed")
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            cx_f1, cx_f2, _ = st.columns(3)
-            with cx_f1:
-                if st.button("🚀 INICIAR SUCCIÓN / REFUELING"):
-                    if "ON" in [st.session_state.valvula_izq, st.session_state.valvula_ctr, st.session_state.valvula_der]:
-                        st.session_state.bombeo_activo = True
-                        st.rerun()
-            with cx_f2:
-                if st.button("⏹️ STOP FUELING (PAUSA)"):
-                    st.session_state.bombeo_activo = False
-                    st.rerun()
-            st.markdown("</div></div></div>", unsafe_allow_html=True)
-
-        with col_monitor_comb:
-            st.markdown("### 📋 Flight Deck Verification Unit")
-            st.markdown(f"<div class='pantalla-mfd' style='border-color: #d97706; background-color: #0c0702; color: #fbbf24;'>REAL TIME TOTAL COMBUSTIBLE: {st.session_state.combustible_actual} Lbs</div>", unsafe_allow_html=True)
+    with col_monitor_comb:
+        st.markdown("### 📋 Flight Deck Verification Unit")
+        st.markdown(f"<div class='pantalla-mfd' style='border-color: #d97706; background-color: #0c0702; color: #fbbf24;'>REAL TIME TOTAL COMBUSTIBLE: {st.session_state.combustible_actual} Lbs</div>", unsafe_allow_html=True)
