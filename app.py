@@ -283,7 +283,7 @@ if not st.session_state.autenticado:
         
         st.markdown("<br>", unsafe_allow_html=True)
         with st.form("credenciales_cabina"):
-            st.markdown("<h5 style='text-align: center; color: #94a3b8;'>🔒 CONTROL DE ACCESO MILITAR</h5>", unsafe_allow_html=True)
+            st.markdown("<h5 style='text-align: center; color: #000000;'>🔒 CONTROL DE ACCESO </h5>", unsafe_allow_html=True)
             txt_user = st.text_input("Identificador Técnico:", placeholder="gtae_operator")
             txt_pass = st.text_input("Clave de Bloqueo:", type="password", placeholder="••••••••")
             btn_acceso = st.form_submit_button("INGRESAR A LOS SISTEMAS")
