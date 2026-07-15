@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Configuración de la cabina táctica
+# Configuración estructural de la cabina táctica FAE
 st.set_page_config(page_title="Falcon 7X Flight Deck - GTAE", page_icon="✈️", layout="wide")
 
 # ==============================================================================
@@ -144,11 +144,75 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# SELECCIÓN GLOBAL DE INTERFAZ (PILOTOS VS MANTENIMIENTO)
+# ALARMAS Y ADVERTENCIAS SONORAS TRAS RECARGA DE SEGURIDAD
+# ==============================================================================
+if "audio_alarma" not in st.session_state: st.session_state.audio_alarma = None
+
+if st.session_state.audio_alarma == "alarma_critica":
+    components.html("""
+        <script>
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(380, ctx.currentTime);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            osc.connect(gain); gain.connect(ctx.destination); osc.start();
+            setTimeout(() => { osc.stop(); }, 1000);
+        } catch(e){}
+        </script>
+    """, height=0, width=0)
+    st.session_state.audio_alarma = None
+
+elif st.session_state.audio_alarma == "carga_completa":
+    components.html("""
+        <script>
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator(); osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, ctx.currentTime);
+            osc.connect(ctx.destination); osc.start();
+            setTimeout(() => { osc.stop(); }, 400);
+        } catch(e){}
+        </script>
+    """, height=0, width=0)
+    st.session_state.audio_alarma = None
+
+# ==============================================================================
+# CONTROL DE ACCESO MILITAR PRINCIPAL (EVALUADO EN PRIMERA INSTANCIA)
+# ==============================================================================
+if "autenticado" not in st.session_state: st.session_state.autenticado = False
+
+if not st.session_state.autenticado:
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    _, col_login, _ = st.columns([1, 1.4, 1])
+    with col_login:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #3b82f6; padding: 35px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);'>
+                <h1 style='color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; font-family: monospace;'>FLIGHT DECK PANEL SIMULATOR</h1>
+                <h3 style='color: #3b82f6; font-size: 1.1rem; margin-bottom: 25px; font-family: monospace;'>FALCON 7X - GTAE</h3>
+            </div>
+        """, unsafe_allow_html=True)
+        st.image("https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1200&auto=format&fit=crop", caption="Grupo de Transporte Aéreo Especial - FAE", use_container_width=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        with st.form("credenciales_cabina"):
+            st.markdown("<h5 style='text-align: center; color: #94a3b8;'>🔒 CONTROL DE ACCESO MILITAR</h5>", unsafe_allow_html=True)
+            txt_user = st.text_input("Identificador Técnico:", placeholder="gtae_operator")
+            txt_pass = st.text_input("Clave de Bloqueo:", type="password", placeholder="••••••••")
+            if st.form_submit_button("INGRESAR A LOS SISTEMAS"):
+                if txt_user == "gtae" and txt_pass == "7X2026":
+                    st.session_state.autenticado = True
+                    st.rerun()
+                else: st.error("Credenciales incorrectas. Origen de datos no autorizado.")
+    st.stop()
+
+# ==============================================================================
+# SEPARACIÓN POR ENTORNO DE LA BARRA LATERAL (PILOTOS VS TÉCNICOS)
 # ==============================================================================
 with st.sidebar:
-    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ MANDO DE INSTRUCCIÓN</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ AVIONICS SIDEBAR</h4>", unsafe_allow_html=True)
     st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
+    
+    # El cambio a False detiene inmediatamente la ejecución gracias al st.stop() superior
     if st.button("🔒 DESCONECTAR CABINA"):
         st.session_state.autenticado = False
         st.rerun()
@@ -200,9 +264,8 @@ if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.s
 # MÓDULO III: PROCEDIMIENTOS OPERATIVOS CON CONTROL INTEGRAL DEL CODDE 2
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
-    st.title("✈️ Pantalla de Procedimientos Operativos (Pilotos)")
-    st.subheader("Arranque de Plantas Motrices - Flujo de Cabina Completa (CODDE 2)")
-    st.markdown("---")
+    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS (CODDE 2)</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Flujo de Cabina Completa de los 3 Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
 
     col_mandos_vuelo, col_display_honeywell = st.columns([1.2, 1])
 
@@ -322,13 +385,13 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
         """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# MÓDULOS DE MANTENIMIENTO TÉCNICO (ATA 24 CON LOGICA DE EVALUACIÓN CORREGIDA)
+# MÓDULOS DE MANTENIMIENTO TÉCNICO COMPLETO RESTAURADOS AL 100%
 # ------------------------------------------------------------------------------
 else:
     st.title("🔧 Pantalla de Procedimientos de Mantenimiento (Técnicos)")
     st.markdown("---")
     
-    if opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
+    if modulo_activo == "MÓDULO I: DISTRIBUCIÓN ELÉCTRICA (ATA 24)":
         st.subheader("Módulo I: Distribución Eléctrica y Secuenciación Avanzada de Barras")
         procedimiento = st.radio("⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:", ["ENERGIZACIÓN COMPLETA (COLD OPERATIONS)", "DESENERGIZACIÓN COMPLETA (SHUTDOWN)"], horizontal=True)
         
@@ -338,7 +401,6 @@ else:
             st.session_state.falla_procedimiento = False; st.session_state.descripcion_falla = ""
             st.session_state.procedimiento_previo = procedimiento
 
-        # LÓGICA DE CONTROL CORREGIDA: Asigna la alerta CAS y activa el sonido de error procedimental
         def forzar_alarma(texto):
             st.session_state.falla_procedimiento = True
             st.session_state.descripcion_falla = texto
@@ -493,7 +555,6 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-    # --- MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28) ---
     elif modulo_activo == "MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28)":
         st.subheader("Módulo II: Panel de Abastecimiento de Combustible por Presión (Rampa)")
         col_panel_comb, col_monitor_comb = st.columns([1.3, 1])
