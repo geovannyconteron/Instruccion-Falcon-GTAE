@@ -464,8 +464,13 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
             }
         }, 40);
     </script>
-    """
-    components.html(html_triple_clocks, height=650)
+   html_triple_clocks = """
+    <div style="background-color: #04070e; ...">
+        </div>
+"""
+
+# Ahora sí, el componente puede encontrar la variable
+components.html(html_triple_clocks, height=650)
 
 
 # ------------------------------------------------------------------------------
