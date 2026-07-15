@@ -873,7 +873,8 @@ elif opcion_sistema == "MÓDULO II: COMBUSTIBLE (ATA 28)":
 
 {inf_combustible}
             </div>
-        """, unsafe_allow_html=True)import streamlit as st
+        """, unsafe_allow_html=True)
+import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Falcon 7X Flight Deck", layout="wide")
