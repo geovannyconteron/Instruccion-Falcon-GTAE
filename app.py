@@ -278,8 +278,8 @@ if not st.session_state.autenticado:
         """, unsafe_allow_html=True)
         
         # Imagen real del Falcon 7X presidencial provista por el usuario
-        st.image("https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1200&auto=format&fit=crop", 
-                 caption="Fuerza Aérea Ecuatoriana - Grupo de Transporte Aéreo Especial", use_container_width=True)
+        st.image("https://i0.wp.com/planv.com.ec/wp-content/uploads/2019/03/avion-12.jpg?fit=1200%2C960&ssl=1", 
+         caption="Fuerza Aérea Ecuatoriana - Grupo de Transporte Aéreo Especial", use_container_width=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
         with st.form("credenciales_cabina"):
