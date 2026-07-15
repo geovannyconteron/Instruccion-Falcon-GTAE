@@ -144,7 +144,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# ALARMAS Y ADVERTENCIAS SONORAS TRAS RECARGA DE SEGURIDAD
+# ALARMAS CENTRALIZADAS (MANEJADOR DE ESTADOS)
 # ==============================================================================
 if "audio_alarma" not in st.session_state: st.session_state.audio_alarma = None
 
@@ -163,74 +163,31 @@ if st.session_state.audio_alarma == "alarma_critica":
     """, height=0, width=0)
     st.session_state.audio_alarma = None
 
-elif st.session_state.audio_alarma == "carga_completa":
-    components.html("""
-        <script>
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator(); osc.type = 'sine';
-            osc.frequency.setValueAtTime(520, ctx.currentTime);
-            osc.connect(ctx.destination); osc.start();
-            setTimeout(() => { osc.stop(); }, 400);
-        } catch(e){}
-        </script>
-    """, height=0, width=0)
-    st.session_state.audio_alarma = None
-
 # ==============================================================================
-# CONTROL DE ACCESO MILITAR PRINCIPAL
-# ==============================================================================
-if "autenticado" not in st.session_state: st.session_state.autenticado = False
-
-if not st.session_state.autenticado:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    _, col_login, _ = st.columns([1, 1.4, 1])
-    with col_login:
-        st.markdown("""
-            <div style='background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #3b82f6; padding: 35px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);'>
-                <h1 style='color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; font-family: monospace;'>FLIGHT DECK PANEL SIMULATOR</h1>
-                <h3 style='color: #3b82f6; font-size: 1.1rem; margin-bottom: 25px; font-family: monospace;'>FALCON 7X - GTAE</h3>
-            </div>
-        """, unsafe_allow_html=True)
-        st.image("https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1200&auto=format&fit=crop", caption="Grupo de Transporte Aéreo Especial - FAE", use_container_width=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        with st.form("credenciales_cabina"):
-            st.markdown("<h5 style='text-align: center; color: #94a3b8;'>🔒 CONTROL DE ACCESO MILITAR</h5>", unsafe_allow_html=True)
-            txt_user = st.text_input("Identificador Técnico:", placeholder="gtae_operator")
-            txt_pass = st.text_input("Clave de Bloqueo:", type="password", placeholder="••••••••")
-            if st.form_submit_button("INGRESAR A LOS SISTEMAS"):
-                if txt_user == "gtae" and txt_pass == "7X2026":
-                    st.session_state.autenticado = True
-                    st.rerun()
-                else: st.error("Credenciales incorrectas. Origen de datos no autorizado.")
-    st.stop()
-
-# ==============================================================================
-# SEPARACIÓN POR ENTORNO DE LA BARRA LATERAL (PILOTOS VS TÉCNICOS)
+# BARRA LATERAL - SELECCIÓN EXCLUSIVA DE ENTORNO
 # ==============================================================================
 with st.sidebar:
-    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ AVIONICS SIDEBAR</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ MANDO DE INSTRUCCIÓN</h4>", unsafe_allow_html=True)
     st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
-    
     if st.button("🔒 DESCONECTAR CABINA"):
         st.session_state.autenticado = False
         st.rerun()
     st.markdown("---")
     
     tipo_procedimiento = st.radio(
-        "PERFIL DE EVALUACIÓN:",
+        "PERFIL OPERACIONAL:",
         ["✈️ PROCEDIMIENTOS OPERATIVOS (PILOTOS)", "🔧 PROCEDIMIENTOS DE MANTENIMIENTO (TÉCNICOS)"]
     )
 
     if tipo_procedimiento == "🔧 PROCEDIMIENTOS DE MANTENIMIENTO (TÉCNICOS)":
-        opcion_sistema = st.radio(
+        modulo_activo = st.radio(
             "CONSOLA INTERACTIVA TÉCNICA:",
             ["MÓDULO I: ENERGIZACIÓN (ATA 24)", "MÓDULO II: COMBUSTIBLE (ATA 28)"]
         )
     else:
-        opcion_sistema = "MÓDULO III: ENCENDIDO DE MOTORES"
+        modulo_activo = "MÓDULO III: ENCENDIDO DE MOTORES"
 
-# Inicialización de memorias operacionales e historial de pasos técnicos
+# Inicialización de variables operacionales y persistencia de memoria
 if "fase_e" not in st.session_state: st.session_state.fase_e = 0
 if "fase_d" not in st.session_state: st.session_state.fase_d = 0
 if "falla_procedimiento" not in st.session_state: st.session_state.falla_procedimiento = False
@@ -242,7 +199,7 @@ if "valvula_ctr" not in st.session_state: st.session_state.valvula_ctr = "OFF"
 if "valvula_der" not in st.session_state: st.session_state.valvula_der = "OFF"
 if "bombeo_activo" not in st.session_state: st.session_state.bombeo_activo = False
 
-# Variables de estado de motores para el perfil CODDE 2
+# Variables de estado de motores para el perfil CODDE 2 (Pilotos)
 if "p_apu" not in st.session_state: st.session_state.p_apu = "OFF"
 if "p_bleed" not in st.session_state: st.session_state.p_bleed = "CLOSED"
 if "p_boost" not in st.session_state: st.session_state.p_boost = "OFF"
@@ -250,28 +207,20 @@ if "p_eng" not in st.session_state: st.session_state.p_eng = ["STBY", "STBY", "S
 if "p_lever" not in st.session_state: st.session_state.p_lever = ["SHUTOFF", "SHUTOFF", "SHUTOFF"]
 if "p_cas" not in st.session_state: st.session_state.p_cas = "🟢 SYSTEMS GENERAL RUN NOMINAL\nMotores y líneas de presión monitoreados según el perfil Dassault EASy."
 
-# Simulación de recarga de rampa (Módulo II)
-if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.session_state.combustible_objetivo:
-    st.session_state.combustible_actual += 400
-    if st.session_state.combustible_actual >= st.session_state.combustible_objetivo:
-        st.session_state.combustible_actual = st.session_state.combustible_objetivo
-        st.session_state.bombeo_activo = False
-        st.session_state.audio_alarma = "carga_completa"
-    st.rerun()
-
 # ------------------------------------------------------------------------------
-# MÓDULO III: PROCEDIMIENTOS OPERATIVOS (PILOTOS - CODDE 2)
+# MÓDULO III: PROCEDIMIENTOS OPERATIVOS (ENCENDIDO DE MOTORES)
 # ------------------------------------------------------------------------------
-if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
+if modulo_activo == "MÓDULO III: ENCENDIDO DE MOTORES":
     st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS (CODDE 2)</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Flujo de Cabina Completa de los 3 Motores Pratt & Whitney PW307A</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Fases de Arranque de Cabina Completa - Task Allocation (Left/Right Hand Seat)</p>", unsafe_allow_html=True)
 
     col_mandos_vuelo, col_display_honeywell = st.columns([1.2, 1])
 
     with col_mandos_vuelo:
         st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
         
-        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>Auxiliary Power Unit & Bleed Air (ATA 36 / 49)</div>", unsafe_allow_html=True)
+        # Preliminary Actions - APU & Air Bleed
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🛡️ Preliminary Actions - APU & Bleed Air (ATA 36 / 49)</div>", unsafe_allow_html=True)
         c_apu = st.columns(2)
         with c_apu[0]:
             if st.button("APU MASTER SWITCH"):
@@ -287,12 +236,14 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
             st.markdown("<div class='anunciador-amber'>BLEED OPEN</div>" if st.session_state.p_bleed == "OPEN" else "<div class='anunciador-apagado'>CLOSED</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+        # Overhead Fuel Panel (ATA 28 Boost Pumps)
         st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>Overhead Fuel Panel (ATA 28 Boost Pumps)</div>", unsafe_allow_html=True)
         if st.button(f"FUEL MAIN BOOST PUMPS INTERRUPTOR: {st.session_state.p_boost}"):
             st.session_state.p_boost = "ON" if st.session_state.p_boost == "OFF" else "OFF"
             st.rerun()
         st.markdown("<div class='anunciador-verde'>BOOSTER EN LÍNEA</div>" if st.session_state.p_boost == "ON" else "<div class='anunciador-apagado'>PUMPS OFF</div>", unsafe_allow_html=True)
 
+        # Man Start Panel - 3 Motores Independientes
         st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>Engine Ignition & Motoring (Overhead Panel)</div>", unsafe_allow_html=True)
         c_motores = st.columns(3)
         for i in range(3):
@@ -302,15 +253,16 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                     if st.session_state.p_bleed == "OPEN":
                         st.session_state.p_eng[i] = "CRANK"
                         if st.session_state.p_lever[i] == "RUN":
-                            st.session_state.p_cas = f"🚨 ALERT CAS: HOT START IN ENGINE {i+1}!\n Combustible inyectado de forma prematura con rotación N2 inferior al 15%."
+                            st.session_state.p_cas = f"09 BLEED: HOT START IN ENGINE {i+1}!\n Combustible inyectado prematuramente con rotación N2 inferior al 15%."
                             st.session_state.audio_alarma = "alarma_critica"
                     else:
-                        st.session_state.p_cas = f"🚨 ALERT CAS: BLEED AIR FAULT ENGINE {i+1}!\n No hay presión neumática en las líneas de sangrado (APU BLEED CLOSED)."
+                        st.session_state.p_cas = f"09 BLEED: AIR FAULT ENGINE {i+1}!\n No hay presión neumática en las líneas de sangrado (APU BLEED CLOSED)."
                         st.session_state.audio_alarma = "alarma_critica"
                     st.rerun()
                 st.markdown(f"<div class='anunciador-amber'>{st.session_state.p_eng[i]}</div>" if st.session_state.p_eng[i] != "STBY" else "<div class='anunciador-apagado'>STBY</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+        # Pedestal Fuel Levers
         st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>Pedestal Fuel Control Levers (Run/Shutoff)</div>", unsafe_allow_html=True)
         c_levers = st.columns(3)
         for i in range(3):
@@ -319,13 +271,13 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                     st.session_state.p_lever[i] = "RUN" if st.session_state.p_lever[i] == "SHUTOFF" else "SHUTOFF"
                     if st.session_state.p_lever[i] == "RUN":
                         if st.session_state.p_boost == "OFF":
-                            st.session_state.p_cas = f"🚨 ALERT CAS: FUEL PUMP FAULT ENGINE {i+1}!\n Intento de inyección de mezcla sin activar las Boost Pumps (ATA 28)."
+                            st.session_state.p_cas = f"28 FUEL: PUMP FAULT ENGINE {i+1}!\n Suministro interrumpido. Intento de ignición sin activar las Boost Pumps."
                             st.session_state.audio_alarma = "alarma_critica"
                         elif st.session_state.p_eng[i] == "CRANK":
                             st.session_state.p_eng[i] = "RUN IDLE"
                             st.session_state.p_cas = f"🟩 SYSTEMS STATUS: ENGINE {i+1} ENGAGED IN IDLE RANGES NOMINAL."
                         else:
-                            st.session_state.p_cas = f"🚨 ALERT CAS: HOT START IN ENGINE {i+1}!\n Válvula de corte abierta sin flujo ni rotación neumática previa."
+                            st.session_state.p_cas = f"09 BLEED: HOT START IN ENGINE {i+1}!\n Válvula de corte abierta sin flujo ni rotación neumática previa."
                             st.session_state.audio_alarma = "alarma_critica"
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -340,6 +292,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
     with col_display_honeywell:
         st.markdown("### 📺 Honeywell EASy Avionics Display")
         
+        # Relojes analógicos síncronos
         html_clocks = ""
         for i in range(3):
             n1 = 24.2 if st.session_state.p_eng[i] == "RUN IDLE" else 0.0
@@ -385,14 +338,11 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
         """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# MÓDULOS DE MANTENIMIENTO TÉCNICO COMPLETO RESTAURADOS AL 100%
+# MÓDULOS DE MANTENIMIENTO TÉCNICO (ATA 24 Y ATA 28 INTEGROS CORREGIDOS)
 # ------------------------------------------------------------------------------
 else:
     st.title("🔧 Pantalla de Procedimientos de Mantenimiento (Técnicos)")
     st.markdown("---")
-    
-    # SE CORRIGE EL NAMEERROR ASIGNANDO LA VARIABLE CORRECTA CORRESPONDIENTE AL FILTRADO LATERAL TRADICIONAL
-    modulo_activo = opcion_sistema
     
     if modulo_activo == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
         st.subheader("Módulo I: Distribución Eléctrica y Secuenciación Avanzada de Barras")
