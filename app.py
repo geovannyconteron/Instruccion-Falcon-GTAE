@@ -178,7 +178,7 @@ elif st.session_state.audio_alarma == "carga_completa":
     st.session_state.audio_alarma = None
 
 # ==============================================================================
-# CONTROL DE ACCESO MILITAR PRINCIPAL (EVALUADO EN PRIMERA INSTANCIA)
+# CONTROL DE ACCESO MILITAR PRINCIPAL
 # ==============================================================================
 if "autenticado" not in st.session_state: st.session_state.autenticado = False
 
@@ -212,7 +212,6 @@ with st.sidebar:
     st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈️ AVIONICS SIDEBAR</h4>", unsafe_allow_html=True)
     st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
     
-    # El cambio a False detiene inmediatamente la ejecución gracias al st.stop() superior
     if st.button("🔒 DESCONECTAR CABINA"):
         st.session_state.autenticado = False
         st.rerun()
@@ -261,7 +260,7 @@ if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.s
     st.rerun()
 
 # ------------------------------------------------------------------------------
-# MÓDULO III: PROCEDIMIENTOS OPERATIVOS CON CONTROL INTEGRAL DEL CODDE 2
+# MÓDULO III: PROCEDIMIENTOS OPERATIVOS (PILOTOS - CODDE 2)
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
     st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PANTALLA DE PROCEDIMIENTOS OPERATIVOS (CODDE 2)</h2>", unsafe_allow_html=True)
@@ -271,6 +270,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
 
     with col_mandos_vuelo:
         st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
+        
         st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>Auxiliary Power Unit & Bleed Air (ATA 36 / 49)</div>", unsafe_allow_html=True)
         c_apu = st.columns(2)
         with c_apu[0]:
@@ -391,7 +391,10 @@ else:
     st.title("🔧 Pantalla de Procedimientos de Mantenimiento (Técnicos)")
     st.markdown("---")
     
-    if modulo_activo == "MÓDULO I: DISTRIBUCIÓN ELÉCTRICA (ATA 24)":
+    # SE CORRIGE EL NAMEERROR ASIGNANDO LA VARIABLE CORRECTA CORRESPONDIENTE AL FILTRADO LATERAL TRADICIONAL
+    modulo_activo = opcion_sistema
+    
+    if modulo_activo == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
         st.subheader("Módulo I: Distribución Eléctrica y Secuenciación Avanzada de Barras")
         procedimiento = st.radio("⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:", ["ENERGIZACIÓN COMPLETA (COLD OPERATIONS)", "DESENERGIZACIÓN COMPLETA (SHUTDOWN)"], horizontal=True)
         
@@ -459,9 +462,7 @@ else:
                 st.markdown("<div class='anunciador-amber'>OFF</div>" if st.session_state.fase_e >= 10 else "<div class='anunciador-verde'>ON</div>", unsafe_allow_html=True)
             with grid_sup[7]:
                 if st.button("EXT PWR", key="ep_m"):
-                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)":
-                        if st.session_state.fase_e == 8: st.session_state.fase_e = 9
-                        else: forzar_alarma("EXT POWER conectado sin configurar los parámetros nominales de la planta externa.")
+                    if procedimiento == "ENERGIZACIÓN COMPLETA (COLD OPERATIONS)" and st.session_state.fase_e == 8: st.session_state.fase_e = 9
                     st.rerun()
                 st.markdown("<div class='anunciador-verde'>ONLINE</div>" if st.session_state.fase_e >= 9 else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
@@ -555,7 +556,7 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-    elif modulo_activo == "MÓDULO II: PRESIÓN DE COMBUSTIBLE (ATA 28)":
+    elif modulo_activo == "MÓDULO II: COMBUSTIBLE (ATA 28)":
         st.subheader("Módulo II: Panel de Abastecimiento de Combustible por Presión (Rampa)")
         col_panel_comb, col_monitor_comb = st.columns([1.3, 1])
         with col_panel_comb:
@@ -587,6 +588,6 @@ else:
                     st.rerun()
             st.markdown("</div></div></div>", unsafe_allow_html=True)
 
-    with col_monitor_comb:
-        st.markdown("### 📋 Flight Deck Verification Unit")
-        st.markdown(f"<div class='pantalla-mfd' style='border-color: #d97706; background-color: #0c0702; color: #fbbf24;'>REAL TIME TOTAL COMBUSTIBLE: {st.session_state.combustible_actual} Lbs</div>", unsafe_allow_html=True)
+        with col_monitor_comb:
+            st.markdown("### 📋 Flight Deck Verification Unit")
+            st.markdown(f"<div class='pantalla-mfd' style='border-color: #d97706; background-color: #0c0702; color: #fbbf24;'>REAL TIME TOTAL COMBUSTIBLE: {st.session_state.combustible_actual} Lbs</div>", unsafe_allow_html=True)
