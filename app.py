@@ -762,7 +762,7 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
         st.markdown(f"""
             <div class="pantalla-mfd" style="border: 5px solid {borde_crt}; background-color: {fondo_crt}; color: {texto_crt};">
 <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 25px; font-size: 0.8rem; font-weight: bold;"><span>HONEYWELL PDU: AVIONICS SHIELD</span><span>MODO: TÁCTICO</span></div>
-⚙️ TELEMETRÍA DE RED DE DISTRIBUCIÓN EN TIEMPO REAL (ATA 24):
+TELEMETRÍA DE RED DE DISTRIBUCIÓN EN TIEMPO REAL (ATA 24):
  • SENSOR BUS GPU EXTERNO       : {val_gpu}
  • LH ESSENTIAL BUS DE CABINA   : {val_bus}
  • RH ESSENTIAL BUS DE CABINA   : {val_bus}
