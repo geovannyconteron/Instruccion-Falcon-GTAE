@@ -512,8 +512,8 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
 # DESARROLLO VISUAL MÓDULO I: OVERHEAD ELECTRICAL PANEL (ATA 24)
 # ------------------------------------------------------------------------------
 elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
-    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>OVERHEAD COCKPIT PANEL</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Panel de Distribución Eléctrica</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #000000; font-family: monospace;'>OVERHEAD COCKPIT PANEL</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #000000;'>Panel de Distribución Eléctrica</p>", unsafe_allow_html=True)
     
     procedimiento = st.radio(
         "⚙️ SELECCIONE PROCEDIMIENTO DE EVALUACIÓN:",
@@ -814,8 +814,8 @@ elif opcion_sistema == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
 # DESARROLLO VISUAL MÓDULO II: PRESSURE FUELING PANEL (ATA 28)
 # ------------------------------------------------------------------------------
 elif opcion_sistema == "MÓDULO II: COMBUSTIBLE (ATA 28)":
-    st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace;'>PRESSURE FUELING PANEL</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Réplica Skeuomórfica del Dispositivo Físico de Rampa (Lbs)</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #000000; font-family: monospace;'>PRESSURE FUELING PANEL</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #000000;'>Réplica Skeuomórfica del Dispositivo Físico de Rampa (Lbs)</p>", unsafe_allow_html=True)
     
     col_panel_comb, col_monitor_comb = st.columns([1.3, 1])
     
