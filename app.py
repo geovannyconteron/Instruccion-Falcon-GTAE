@@ -35,7 +35,7 @@ components.html("""
 
     parentDoc.addEventListener('click', function(e) {
         const target = e.target;
-        if (target && (target.tagName === 'BUTTON' || target.closest('button') || target.classList.contains('sw-click'))) {
+        if (target && (target.tagName === 'BUTTON' || target.closest('button'))) {
             playCockpitClick();
         }
     }, true);
@@ -43,171 +43,117 @@ components.html("""
 """, height=0, width=0)
 
 # ==============================================================================
-# ESTILOS SKEUOMÓRFICOS METICULOSOS (FALCON 7X OVERHEAD & DISPLAY AVIONICS)
+# DISEÑO TRIDIMENSIONAL SKEUOMÓRFICO (CABINA REALISTA CSS)
 # ==============================================================================
 st.markdown("""
     <style>
     .main { 
-        background-color: #080b11; 
+        background-color: #0b0f19; 
         color: #e2e8f0;
         font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
-    
-    /* Chasis exterior del Overhead Panel de Dassault */
-    .overhead-cockpit-panel {
-        background: radial-gradient(circle at 50% 30%, #202736, #0e121a);
-        border: 4px solid #3a455a;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), 
-                    inset 0 2px 5px rgba(255, 255, 255, 0.15),
-                    0 0 15px rgba(59, 130, 246, 0.1);
-        margin-bottom: 25px;
-    }
-    
-    /* Placas serigrafiadas de sub-sistemas */
-    .sistema-subpanel {
-        background: linear-gradient(180deg, #161b26, #0c0f17);
-        border: 2px solid #232c3d;
-        border-top: 2px solid #323f57;
-        border-bottom: 3px solid #07090d;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.5);
-    }
-    
-    .serigrafia-header {
-        color: #7f8fa4;
-        font-family: 'Courier New', monospace;
-        font-weight: 800;
-        font-size: 0.85rem;
-        text-align: center;
-        letter-spacing: 3px;
-        margin-bottom: 18px;
-        text-transform: uppercase;
-        border-bottom: 1px dashed #232c3d;
-        padding-bottom: 6px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    }
-    
-    /* Interruptor de Botón Físico de Cabina (Korry Pushbutton) */
-    .korry-switch {
-        background: linear-gradient(180deg, #2b3547, #1a202c);
-        border-top: 2px solid #4a5a75;
-        border-left: 2px solid #38455c;
-        border-right: 2px solid #0f131a;
-        border-bottom: 4px solid #0a0d12;
-        border-radius: 6px;
-        padding: 10px 5px;
-        min-height: 85px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 8px 12px rgba(0,0,0,0.6);
-        transition: all 0.1s ease;
-        cursor: pointer;
-    }
-    
-    .korry-switch:active {
-        transform: translateY(3px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        border-top: 2px solid #0a0d12;
-        border-bottom: 1px solid #38455c;
-    }
-    
-    .korry-label {
-        font-family: 'Courier New', monospace;
-        font-weight: bold;
-        font-size: 0.7rem;
-        color: #94a3b8;
-        text-shadow: 1px 1px 1px #000;
-        text-align: center;
-        line-height: 1;
-        margin-bottom: 6px;
-    }
-    
-    /* Anunciadores de luz duales de cabina real */
-    .luz-anunciadora {
-        width: 80%;
-        height: 18px;
-        border-radius: 3px;
-        font-family: monospace;
-        font-size: 0.65rem;
-        font-weight: 900;
-        text-align: center;
-        line-height: 18px;
-        letter-spacing: 1px;
-    }
-    
-    .luz-verde-on {
-        background-color: #042f1a; color: #4ade80; border: 1px solid #22c55e;
-        box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
-    }
-    
-    .luz-amber-on {
-        background-color: #451a03; color: #fbbf24; border: 1px solid #f59e0b;
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.7);
-    }
-    
-    .luz-apagada {
-        background-color: #11151d; color: #374151; border: 1px solid #1f2937;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
-    }
-    
-    /* Recreación del Pedestal con palancas de combustible */
-    .pedestal-chasis {
-        background: linear-gradient(180deg, #181f2a, #0e121a);
-        border: 3px solid #2d3748;
+    .overhead-frame {
+        background: linear-gradient(145deg, #1e2530, #131822);
+        border: 6px solid #2d3748;
         border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.8);
-    }
-    
-    .slot-palanca {
-        background: #090c12;
-        border: 2px solid #1a202c;
-        border-radius: 8px;
-        height: 150px;
+        padding: 25px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(255,255,255,0.1);
+        margin-bottom: 25px;
         position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
+    }
+    .subpanel-3d {
+        background: linear-gradient(180deg, #1a202c, #11141d);
+        border-left: 4px solid #0f1219;
+        border-top: 4px solid #0f1219;
+        border-right: 4px solid #2d3748;
+        border-bottom: 4px solid #2d3748;
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 15px;
+        box-shadow: inset 0 4px 8px rgba(0,0,0,0.6), 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .linea-tactica {
+        border-top: 2px solid #4a5568;
+        border-bottom: 1px solid #1a202c;
+        margin: 15px 0;
+    }
+    .titulo-serigrafia {
+        color: #94a3b8;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 0.9rem;
+        text-align: center;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .stButton>button { 
+        width: 100%; 
+        font-weight: bold; 
+        height: 54px; 
+        border-radius: 6px; 
+        font-size: 0.8rem;
+        font-family: 'Courier New', Courier, monospace;
+        background: linear-gradient(180deg, #334155, #1e293b) !important;
+        color: #e2e8f0 !important;
+        border-top: 2px solid #64748b !important;
+        border-left: 2px solid #475569 !important;
+        border-right: 2px solid #0f172a !important;
+        border-bottom: 3px solid #0f172a !important;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+        transition: all 0.1s ease;
+    }
+    .stButton>button:active {
+        transform: translateY(3px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        border-top: 2px solid #0f172a !important;
+        border-bottom: 1px solid #475569 !important;
+    }
+    .anunciador-verde { 
+        background-color: #042f1a; color: #4ade80; border: 2px solid #22c55e; font-weight: bold;
+        text-align: center; border-radius: 4px; font-size: 0.75rem; padding: 5px; font-family: monospace;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+    }
+    .anunciador-amber { 
+        background-color: #451a03; color: #fbbf24; border: 2px solid #f59e0b; font-weight: bold;
+        text-align: center; border-radius: 4px; font-size: 0.75rem; padding: 5px; font-family: monospace;
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+    }
+    .anunciador-apagado { 
+        background-color: #181f2a; color: #4b5563; border: 2px solid #374151;
+        text-align: center; border-radius: 4px; font-size: 0.75rem; padding: 5px; font-family: monospace;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .display-digital-principal {
+        background-color: #020203; border: 3px solid #475569; border-radius: 6px; color: #f87171;
+        font-family: 'Courier New', monospace; font-size: 2.4rem; font-weight: bold; text-align: center;
+        letter-spacing: 5px; padding: 12px; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+    .display-digital-secundario {
+        background-color: #020203; border: 2px solid #475569; border-radius: 6px; color: #fbbf24;
+        font-family: 'Courier New', monospace; font-size: 1.6rem; font-weight: bold; text-align: center;
+        letter-spacing: 3px; padding: 8px; box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.3);
+    }
+    .pantalla-mfd {
+        font-family: 'Courier New', monospace; border: 5px solid #334155; background-color: #04070e; 
+        color: #38bdf8; padding: 22px; border-radius: 8px; min-height: 520px; box-shadow: inset 0 0 30px rgba(0,0,0,0.9); 
+        white-space: pre-wrap;
+    }
+    .slot-palanca {
+        background: #090c12; border: 2px solid #1a202c; border-radius: 8px; height: 140px;
+        display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0;
         box-shadow: inset 0 5px 10px rgba(0,0,0,0.9);
     }
-    
-    /* Panel Honeywell EASy del MFD (Modo Azul Nocturno de Dassault) */
-    .pantalla-honeywell-easy {
-        background: radial-gradient(circle at center, #020b1e, #01040a);
-        border: 6px solid #334155;
-        border-top: 6px solid #475569;
-        border-bottom: 8px solid #1e293b;
-        border-radius: 14px;
-        min-height: 580px;
-        padding: 20px;
-        box-shadow: inset 0 0 40px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.7);
-        font-family: 'Courier New', monospace;
-        color: #38bdf8;
-    }
-    
-    .cabecera-mfd {
-        border-bottom: 2px solid #1e293b;
-        padding-bottom: 8px;
-        margin-bottom: 15px;
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
-        font-weight: bold;
-        color: #94a3b8;
+    .korry-label {
+        font-family: 'Courier New', monospace; font-weight: bold; font-size: 0.75rem; color: #94a3b8;
+        text-align: center; margin-bottom: 5px;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# MANEJADOR CENTRALIZADO DE REPRODUCCIÓN DE ALARMAS ACÚSTICAS CAS
+# ALARMAS CENTRALIZADAS (MANEJADOR DE EFECTOS DE SONIDO CAS)
 # ==============================================================================
 if "audio_alarma" not in st.session_state: st.session_state.audio_alarma = None
 
@@ -216,19 +162,10 @@ if st.session_state.audio_alarma == "alarma_critica":
         <script>
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Tono oscilador continuo de advertencia de cabina FAE (500Hz)
-            const osc = ctx.createOscillator(); 
-            const gain = ctx.createGain();
-            
-            osc.type = 'sawtooth'; 
-            osc.frequency.setValueAtTime(500, ctx.currentTime);
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(500, ctx.currentTime);
             gain.gain.setValueAtTime(0.25, ctx.currentTime);
-            
-            osc.connect(gain); 
-            gain.connect(ctx.destination); 
-            osc.start();
-            
+            osc.connect(gain); gain.connect(ctx.destination); osc.start();
             setTimeout(() => { osc.stop(); }, 1200);
         } catch(e){}
         </script>
@@ -240,11 +177,9 @@ elif st.session_state.audio_alarma == "carga_completa":
         <script>
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator(); 
-            osc.type = 'sine';
+            const osc = ctx.createOscillator(); osc.type = 'sine';
             osc.frequency.setValueAtTime(580, ctx.currentTime);
-            osc.connect(ctx.destination); 
-            osc.start();
+            osc.connect(ctx.destination); osc.start();
             setTimeout(() => { osc.stop(); }, 500);
         } catch(e){}
         </script>
@@ -252,7 +187,7 @@ elif st.session_state.audio_alarma == "carga_completa":
     st.session_state.audio_alarma = None
 
 # ==============================================================================
-# SISTEMA DE LOGIN MILITAR DEL GTAE
+# CONTROL DE ACCESO MILITAR PRINCIPAL
 # ==============================================================================
 if "autenticado" not in st.session_state: st.session_state.autenticado = False
 
@@ -269,23 +204,22 @@ if not st.session_state.autenticado:
         st.image("https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1200&auto=format&fit=crop", caption="Unidad de Simulación y Sistemas Especiales - FAE", use_container_width=True)
         st.markdown("<br>", unsafe_allow_html=True)
         with st.form("credenciales_cabina"):
-            st.markdown("<h5 style='text-align: center; color: #94a3b8; font-family: monospace;'>🔒 SISTEMA DE ACCESO TÉCNICO</h5>", unsafe_allow_html=True)
+            st.markdown("<h5 style='text-align: center; color: #94a3b8; font-family: monospace;'>🔒 CONTROL DE ACCESO MILITAR</h5>", unsafe_allow_html=True)
             txt_user = st.text_input("Operador:", placeholder="gtae_operator")
             txt_pass = st.text_input("Código de Seguridad:", type="password", placeholder="••••••••")
             if st.form_submit_button("AUTORIZAR ENTRADA"):
                 if txt_user == "gtae" and txt_pass == "7X2026":
                     st.session_state.autenticado = True
                     st.rerun()
-                else: 
-                    st.error("Origen de datos no autorizado. Credenciales inválidas.")
+                else: st.error("Credenciales incorrectas. Origen de datos no autorizado.")
     st.stop()
 
 # ==============================================================================
-# MENU LATERAL - CAMBIO DE ROL OPERATIVO VS TÉCNICO
+# BARRA LATERAL - SEPARACIÓN POR ENTORNO DE EVALUACIÓN
 # ==============================================================================
 with st.sidebar:
-    st.markdown("<h4 style='color: #38bdf8; font-family: monospace; letter-spacing: 1px;'>✈️ FAE AVIONICS PANEL</h4>", unsafe_allow_html=True)
-    st.markdown("**Unidad:** Grupo de Transporte Aéreo Especial")
+    st.markdown("<h4 style='color: #38bdf8; font-family: monospace;'>✈ glycemic AVIONICS SHIELD</h4>", unsafe_allow_html=True)
+    st.markdown("**Destacamento:** Grupo de Transporte Aéreo Especial")
     
     if st.button("🔒 DESCONECTAR CABINA"):
         st.session_state.autenticado = False
@@ -305,7 +239,7 @@ with st.sidebar:
     else:
         opcion_sistema = "MÓDULO III: ENCENDIDO DE MOTORES"
 
-# Inicialización de memorias operacionales de rampa de mantenimiento
+# Inicialización de variables operacionales y persistencia de memoria
 if "fase_e" not in st.session_state: st.session_state.fase_e = 0
 if "fase_d" not in st.session_state: st.session_state.fase_d = 0
 if "falla_procedimiento" not in st.session_state: st.session_state.falla_procedimiento = False
@@ -317,16 +251,16 @@ if "valvula_ctr" not in st.session_state: st.session_state.valvula_ctr = "OFF"
 if "valvula_der" not in st.session_state: st.session_state.valvula_der = "OFF"
 if "bombeo_activo" not in st.session_state: st.session_state.bombeo_activo = False
 
-# Variables de estado de motores para el perfil libre CODDE 2 (Pilotos)
+# Variables de estado de motores e hileras independientes de Korrys del CODDE 2
 if "p_bat" not in st.session_state: st.session_state.p_bat = "OFF"
 if "p_apu" not in st.session_state: st.session_state.p_apu = "OFF"
 if "p_bleed" not in st.session_state: st.session_state.p_bleed = "CLOSED"
-if "p_boost" not in st.session_state: st.session_state.p_boost = "OFF"
+if "p_boost_pumps" not in st.session_state: st.session_state.p_boost_pumps = ["OFF", "OFF", "OFF", "OFF"]  # 1A, 2A, 2B, 3A
 if "p_eng" not in st.session_state: st.session_state.p_eng = ["STBY", "STBY", "STBY"]
 if "p_lever" not in st.session_state: st.session_state.p_lever = ["SHUTOFF", "SHUTOFF", "SHUTOFF"]
 if "p_cas" not in st.session_state: st.session_state.p_cas = ["🟢 COLD DARK CONFIGURATION", "Avión apagado completamente. Requiere energización esencial."]
 
-# Paso de combustible bajo presión (Módulo II)
+# Simulación de recarga de rampa (Módulo II)
 if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.session_state.combustible_objetivo:
     st.session_state.combustible_actual += 400
     if st.session_state.combustible_actual >= st.session_state.combustible_objetivo:
@@ -336,22 +270,22 @@ if st.session_state.bombeo_activo and st.session_state.combustible_actual < st.s
     st.rerun()
 
 # ------------------------------------------------------------------------------
-# MÓDULO III: PROCEDIMIENTOS OPERATIVOS (PILOTOS - ENTORNO COMPLETAMENTE LIBRE)
+# MÓDULO III: PROCEDIMIENTOS OPERATIVOS CON CONTROL INTEGRAL DEL CODDE 2
 # ------------------------------------------------------------------------------
 if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
     st.markdown("<h2 style='text-align: center; color: #f1f5f9; font-family: monospace; letter-spacing: 1px;'>✈️ PANEL OVERHEAD DE PILOTOS (SEC. CODDE 2)</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8; margin-top:-10px;'>La cabina es completamente libre. Las desviaciones del procedimiento dispararán alertas en el EASy</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8; margin-top:-10px;'>Cabina Libre - Las desviaciones del procedimiento dispararán alertas en el EASy</p>", unsafe_allow_html=True)
 
-    col_overhead_real, col_pantalla_honeywell = st.columns([1.3, 1])
+    col_mandos_vuelo, col_display_honeywell = st.columns([1.3, 1])
 
-    with col_overhead_real:
-        st.markdown("<div class='overhead-cockpit-panel'>", unsafe_allow_html=True)
+    with col_mandos_vuelo:
+        st.markdown("<div class='overhead-frame'>", unsafe_allow_html=True)
         
-        # Subpanel de Baterías ATA 24
-        st.markdown("<div class='sistema-subpanel'><div class='serigrafia-header'>⚡ ATA 24 ELECTRIC DC CONTROL</div>", unsafe_allow_html=True)
+        # ATA 24 ELECTRIC DC CONTROL
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>⚡ ATA 24 ELECTRIC DC CONTROL</div>", unsafe_allow_html=True)
         col_bats = st.columns(2)
         with col_bats[0]:
-            st.markdown("""<div class='korry-label'>BAT 1</div>""", unsafe_allow_html=True)
+            st.markdown("<div class='korry-label'>BAT 1</div>", unsafe_allow_html=True)
             if st.button("BAT 1 PUSH", key="btn_bat1"):
                 st.session_state.p_bat = "ON" if st.session_state.p_bat == "OFF" else "OFF"
                 if st.session_state.p_bat == "ON":
@@ -359,55 +293,43 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                 else:
                     st.session_state.p_cas = ["🟢 COLD DARK CONFIGURATION", "Avión apagado completamente."]
                 st.rerun()
-            luz_bat_on = "luz-verde-on" if st.session_state.p_bat == "ON" else "luz-apagada"
-            st.markdown(f"<div class='luz-anunciadora {luz_bat_on}'>AUTO</div>", unsafe_allow_html=True)
-            
+            st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.p_bat == "ON" else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
         with col_bats[1]:
-            st.markdown("""<div class='korry-label'>BAT 2</div>""", unsafe_allow_html=True)
+            st.markdown("<div class='korry-label'>BAT 2</div>", unsafe_allow_html=True)
             if st.button("BAT 2 PUSH", key="btn_bat2"):
                 st.session_state.p_bat = "ON" if st.session_state.p_bat == "OFF" else "OFF"
-                if st.session_state.p_bat == "ON":
-                    st.session_state.p_cas = ["🔸 28 FUEL: BOOST PUMPS OFF", "🔸 36 BLEED: APU VALVE CLOSED", "🔸 29 HYDR: PRESS LOW"]
-                else:
-                    st.session_state.p_cas = ["🟢 COLD DARK CONFIGURATION", "Avión apagado completamente."]
                 st.rerun()
-            st.markdown(f"<div class='luz-anunciadora {luz_bat_on}'>AUTO</div>", unsafe_allow_html=True)
+            st.markdown("<div class='anunciador-verde'>AUTO</div>" if st.session_state.p_bat == "ON" else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Subpanel de Bombas de Combustible de Cabina (Overhead Fuel Row)
-        st.markdown("<div class='sistema-subpanel'><div class='serigrafia-header'>⛽ ATA 28 CABIN FUEL BOOST PUMPS</div>", unsafe_allow_html=True)
-        col_boosters = st.columns(3)
-        for i in range(3):
+        # INTERFAZ EXPANDIDA CORREGIDA: LAS 4 BOMBAS INDEPENDIENTES DEL COODE 2 (1A - 2A - 2B - 3A)
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>⛽ ATA 28 FUEL OVERHEAD ROW - BOOST PUMPS (1A - 2A - 2B - 3A)</div>", unsafe_allow_html=True)
+        col_boosters = st.columns(4)
+        nombres_pumps = ["PUMP 1A", "PUMP 2A", "PUMP 2B", "PUMP 3A"]
+        for i in range(4):
             with col_boosters[i]:
-                st.markdown(f"<div class='korry-label'>ENG {i+1} BOOST</div>", unsafe_allow_html=True)
-                if st.button("PUSH", key=f"btn_boost_{i}"):
+                st.markdown(f"<div class='korry-label'>{nombres_pumps[i]}</div>", unsafe_allow_html=True)
+                if st.button("PUSH", key=f"btn_pump_{i}"):
                     if st.session_state.p_bat == "ON":
-                        st.session_state.p_boost = "ON" if st.session_state.p_boost == "OFF" else "OFF"
-                        if st.session_state.p_boost == "ON":
+                        st.session_state.p_boost_pumps[i] = "ON" if st.session_state.p_boost_pumps[i] == "OFF" else "OFF"
+                        # Si todas las bombas requeridas están armadas, limpiamos el mensaje global del CAS
+                        if all(p == "ON" for p in st.session_state.p_boost_pumps):
                             st.session_state.p_cas = [x for x in st.session_state.p_cas if "28 FUEL" not in x]
-                        else:
-                            if "🔸 28 FUEL: BOOST PUMPS OFF" not in st.session_state.p_cas:
-                                st.session_state.p_cas.append("🔸 28 FUEL: BOOST PUMPS OFF")
                     st.rerun()
-                
-                luz_on = "luz-verde-on" if st.session_state.p_boost == "ON" else "luz-apagada"
-                st.markdown(f"<div class='luz-anunciadora {luz_on}'>ON</div>", unsafe_allow_html=True)
+                st.markdown("<div class='anunciador-verde'>ON</div>" if st.session_state.p_boost_pumps[i] == "ON" else "<div class='anunciador-amber'>FAULT</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Subpanel Neumático APU
-        st.markdown("<div class='sistema-subpanel'><div class='serigrafia-header'>🌬️ ATA 36 / 49 AUXILIARY POWER & BLEED</div>", unsafe_allow_html=True)
+        # ATA 36 / 49 APU & BLEED
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🌬️ ATA 36 / 49 AUXILIARY POWER & BLEED AIR</div>", unsafe_allow_html=True)
         col_apubl = st.columns(2)
         with col_apubl[0]:
             st.markdown("<div class='korry-label'>APU MASTER</div>", unsafe_allow_html=True)
             if st.button("APU PUSH", key="btn_apu_mst"):
                 if st.session_state.p_bat == "ON":
                     st.session_state.p_apu = "RUN" if st.session_state.p_apu == "OFF" else "OFF"
-                    if st.session_state.p_apu == "OFF": 
-                        st.session_state.p_bleed = "CLOSED"
+                    if st.session_state.p_apu == "OFF": st.session_state.p_bleed = "CLOSED"
                 st.rerun()
-            luz_apu = "luz-verde-on" if st.session_state.p_apu == "RUN" else "luz-apagada"
-            st.markdown(f"<div class='luz-anunciadora {luz_apu}'>ON</div>", unsafe_allow_html=True)
-            
+            st.markdown("<div class='anunciador-verde'>ON (100%)</div>" if st.session_state.p_apu == "RUN" else "<div class='anunciador-apagado'>OFF</div>", unsafe_allow_html=True)
         with col_apubl[1]:
             st.markdown("<div class='korry-label'>APU BLEED</div>", unsafe_allow_html=True)
             if st.button("BLEED PUSH", key="btn_apu_bld"):
@@ -419,47 +341,43 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                         if "🔸 36 BLEED: APU VALVE CLOSED" not in st.session_state.p_cas:
                             st.session_state.p_cas.append("🔸 36 BLEED: APU VALVE CLOSED")
                 st.rerun()
-            luz_bleed = "luz-amber-on" if st.session_state.p_bleed == "OPEN" else "luz-apagada"
-            st.markdown(f"<div class='luz-anunciadora {luz_bleed}'>OPEN</div>", unsafe_allow_html=True)
+            st.markdown("<div class='anunciador-amber'>OPEN</div>" if st.session_state.p_bleed == "OPEN" else "<div class='anunciador-apagado'>CLOSED</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Subpanel de Arrancadores de Motores
-        st.markdown("<div class='sistema-subpanel'><div class='serigrafia-header'>⚙️ ATA 70 IGNITION / CRANK PANEL</div>", unsafe_allow_html=True)
-        col_igniters = st.columns(3)
+        # ATA 70 IGNITION / START PANEL
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>⚙️ ATA 70 IGNITION / CRANK PANEL</div>", unsafe_allow_html=True)
+        c_motores = st.columns(3)
         for i in range(3):
-            with col_igniters[i]:
+            with c_motores[i]:
                 st.markdown(f"<div class='korry-label'>ENG {i+1} START</div>", unsafe_allow_html=True)
                 if st.button("ENGAGE", key=f"btn_start_{i}"):
                     if st.session_state.p_bat == "ON":
                         if st.session_state.p_bleed == "OPEN":
                             st.session_state.p_eng[i] = "CRANK"
                             if st.session_state.p_lever[i] == "RUN":
-                                # Castigo inmediato: Inyección prematura de mezcla antes de alcanzar rotación de aire (Hot Start)
                                 st.session_state.p_cas = [f"🚨 72 ENGINE: HOT START DETECTED ENG {i+1}", "Falla estructural crítica. Ignición prematura con N2 bajo."]
                                 st.session_state.audio_alarma = "alarma_critica"
                         else:
                             st.session_state.p_cas = [f"🚨 36 BLEED: AIR FAULT ENG {i+1}", "Presión neumática insuficiente para mover la turbina del motor."]
                             st.session_state.audio_alarma = "alarma_critica"
                     st.rerun()
-                luz_crank = "luz-amber-on" if st.session_state.p_eng[i] == "CRANK" else "luz-apagada"
-                st.markdown(f"<div class='luz-anunciadora {luz_crank}'>CRANK</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='anunciador-amber'>{st.session_state.p_eng[i]}</div>" if st.session_state.p_eng[i] != "STBY" else "<div class='anunciador-apagado'>STBY</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Pedestal Central: Palancas Físicas de Corte de Combustible
-        st.markdown("<div class='pedestal-chasis'><div class='serigrafia-header'>🎮 COCKPIT CENTRAL PEDESTAL (ENG FUEL LEVERS)</div>", unsafe_allow_html=True)
-        col_levers_m = st.columns(3)
+        # Pedestal Central: Palancas Físicas de Combustible
+        st.markdown("<div class='subpanel-3d'><div class='titulo-serigrafia'>🎮 COCKPIT CENTRAL PEDESTAL (ENG FUEL LEVERS)</div>", unsafe_allow_html=True)
+        c_levers = st.columns(3)
         for i in range(3):
-            with col_levers_m[i]:
+            with c_levers[i]:
                 st.markdown(f"<div class='korry-label'>LEVER {i+1}</div>", unsafe_allow_html=True)
                 st.markdown("<div class='slot-palanca'>", unsafe_allow_html=True)
-                
-                # Botón de empuje vertical de cabina
                 if st.button("TOGGLE", key=f"btn_lever_{i}"):
                     if st.session_state.p_bat == "ON":
                         st.session_state.p_lever[i] = "RUN" if st.session_state.p_lever[i] == "SHUTOFF" else "SHUTOFF"
                         if st.session_state.p_lever[i] == "RUN":
-                            if st.session_state.p_boost == "OFF":
-                                st.session_state.p_cas = [f"🚨 28 FUEL: BOOST PUMP FAULT ENG {i+1}", "Falta de presión en el múltiple. Las bombas de cabina están apagadas."]
+                            # Verificación estricta: requiere que las correspondientes bombas booster estén armadas (ON)
+                            if "OFF" in st.session_state.p_boost_pumps:
+                                st.session_state.p_cas = [f"🚨 28 FUEL: BOOST PUMP FAULT ENG {i+1}", "Falta de presión en el múltiple. Revise la hilera de bombas (1A-2A-2B-3A)."]
                                 st.session_state.audio_alarma = "alarma_critica"
                             elif st.session_state.p_eng[i] == "CRANK":
                                 st.session_state.p_eng[i] = "RUN IDLE"
@@ -468,24 +386,18 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                                 st.session_state.p_cas = [f"🚨 72 ENGINE: HOT START DETECTED ENG {i+1}", "Palanca en RUN sin aire de rotación previo. Daño térmico severo."]
                                 st.session_state.audio_alarma = "alarma_critica"
                     st.rerun()
-                
-                if st.session_state.p_lever[i] == "RUN":
-                    st.markdown("<div class='luz-anunciadora luz-verde-on'>RUN</div>", unsafe_allow_html=True)
-                else:
-                    st.markdown("<div class='luz-anunciadora luz-amber-on'>SHUTOFF</div>", unsafe_allow_html=True)
-                
+                st.markdown("<div class='anunciador-verde'>RUN</div>" if st.session_state.p_lever[i] == "RUN" else "<div class='anunciador-amber'>SHUTOFF</div>", unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
+
         if st.button("🚨 LIMPIAR Y REINICIAR PROCEDIMIENTO CODDE 2"):
-            st.session_state.p_bat = "OFF"; st.session_state.p_apu = "OFF"; st.session_state.p_bleed = "CLOSED"; st.session_state.p_boost = "OFF"
+            st.session_state.p_bat = "OFF"; st.session_state.p_apu = "OFF"; st.session_state.p_bleed = "CLOSED"; st.session_state.p_boost_pumps = ["OFF", "OFF", "OFF", "OFF"]
             st.session_state.p_eng = ["STBY", "STBY", "STBY"]; st.session_state.p_lever = ["SHUTOFF", "SHUTOFF", "SHUTOFF"]
             st.session_state.p_cas = ["🟢 COLD DARK CONFIGURATION", "Avión apagado completamente. Requiere energización esencial."]
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with col_pantalla_honeywell:
+    with col_display_honeywell:
         st.markdown("### 📺 Honeywell EASy Avionics Display")
         
         # Relojes e instrumentos analógicos en tiempo real para los 3 motores
@@ -499,7 +411,7 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
                 <div style="font-size:0.75rem; color:#38bdf8; font-weight:bold; font-family: monospace; letter-spacing:1px; margin-bottom: 8px;">ENG {i+1}</div>
                 <canvas id="n1_{i}" width="80" height="80"></canvas><div style="font-size:0.7rem; color:#4ade80; font-family: monospace; margin: 4px 0;">N1: {n1}%</div>
                 <canvas id="n2_{i}" width="80" height="80"></canvas><div style="font-size:0.7rem; color:#4ade80; font-family: monospace; margin: 4px 0;">N2: {n2}%</div>
-                <canvas id="itt_{i}" width="80" height="80"></canvas><div style="font-size:0.7rem; color:#f59e0b; font-family: monospace; margin: 4px 0;">ITT: {itt}°C</div>
+                <canvas id="itt_{i}" width="80" height="80"></canvas><div style="font-size:0.7rem; color:#fbbf24; font-family: monospace; margin: 4px 0;">ITT: {itt}°C</div>
             </div>
             <script>
                 function draw(id, val, max, color) {{
@@ -514,41 +426,44 @@ if opcion_sistema == "MÓDULO III: ENCENDIDO DE MOTORES":
             """
         components.html(f"<div style='display:flex; justify-content: space-around; background: #020b1e; padding: 10px; border-radius:10px; border: 2px solid #1e293b;'>{html_clocks}</div>", height=350)
 
-        # Configuración visual de advertencias CAS
+        # Configuración visual de advertencias CAS (Modo Azul Táctico Nocturno)
         contiene_alertas = any("🚨" in x or "ALERT" in x or "FAULT" in x for x in st.session_state.p_cas)
         borde_mfd = "#f87171" if contiene_alertas else "#334155"
         color_pantalla = "#1e0b0b" if contiene_alertas else "#01040a"
         color_texto_feed = "#fca5a5" if contiene_alertas else "#38bdf8"
 
         st.markdown(f"""
-            <div class="pantalla-honeywell-easy" style="border: 5px solid {borde_mfd}; background-color: {color_pantalla}; color: {color_texto_feed};">
-                <div class="cabecera-mfd">
+            <div class="pantalla-mfd" style="border: 5px solid {borde_mfd}; background-color: {color_pantalla}; color: {color_texto_feed};">
+                <div style="border-bottom: 2px solid #1e293b; padding-bottom: 8px; margin-bottom: 25px; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; color: #94a3b8;">
                     <span>MFD MONITOR: HONEYWELL PRIMUS EASy II</span>
-                    <span>FLIGHT DECK TELEMETRY</span>
+                    <span>FLIGHT DECK SYNOPTIC</span>
                 </div>
                 <div style="font-size: 0.8rem; line-height: 1.6; font-family: monospace;">
-                    <div>⚙️ CABIN ESSENTIAL BUS STATUS:</div>
+                    <div>⚙️ TELEMETRÍA DE PREVALORACIÓN REAL DE SISTEMAS:</div>
                     <div style="padding-left:15px;">• DC BATERÍAS GENERAL   : {st.session_state.p_bat}</div>
-                    <div style="padding-left:15px;">• APU GENERATOR STATUS : {st.session_state.p_apu}</div>
-                    <div style="padding-left:15px;">• MANIFOLD APU BLEED   : {st.session_state.p_bleed}</div>
-                    <div style="padding-left:15px;">• FUEL BOOST PRESSURE  : {"NOMINAL 28 PSI" if st.session_state.p_boost == "ON" else "LOW PRESSURE WARNING"}</div>
+                    <div style="padding-left:15px;">• APU GENERATOR CORE    : {st.session_state.p_apu}</div>
+                    <div style="padding-left:15px;">• APU ISOLATION BLEED   : {st.session_state.p_bleed}</div>
+                    <div style="padding-left:15px;">• BOOSTER PRESSURE (1A) : {"ONLINE" if st.session_state.p_boost_pumps[0] == "ON" else "LOW PRESS"}</div>
+                    <div style="padding-left:15px;">• BOOSTER PRESSURE (2A) : {"ONLINE" if st.session_state.p_boost_pumps[1] == "ON" else "LOW PRESS"}</div>
+                    <div style="padding-left:15px;">• BOOSTER PRESSURE (2B) : {"ONLINE" if st.session_state.p_boost_pumps[2] == "ON" else "LOW PRESS"}</div>
+                    <div style="padding-left:15px;">• BOOSTER PRESSURE (3A) : {"ONLINE" if st.session_state.p_boost_pumps[3] == "ON" else "LOW PRESS"}</div>
                 </div>
                 <div style="border-top: 1px dashed #1e293b; margin: 15px 0;"></div>
-                <div style="font-size: 0.82rem; font-weight: bold; margin-bottom: 8px;">🔔 CREW ALERTING SYSTEM (CAS) LOGS:</div>
+                <div style="font-size: 0.82rem; font-weight: bold; margin-bottom: 8px;">🔔 CREW ALERTING SYSTEM (CAS) DISPLAY FEED:</div>
                 <div style="background-color: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; border: 1px solid #1e293b;">
                     {"<br>".join([f"<div style='margin-bottom: 6px;'>{x}</div>" for x in st.session_state.p_cas])}
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
-# ------------------------------------------------------------------------------
-# MÓDULOS DE MANTENIMIENTO TÉCNICO COMPLETO RESTAURADOS AL 100%
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# MÓDULOS DE MANTENIMIENTO TÉCNICO COMPLETO (RESTAURADO E INTACTO SIN ERRORES)
+# ==============================================================================
 else:
     st.title("🔧 Pantalla de Procedimientos de Mantenimiento (Técnicos)")
     st.markdown("---")
     
-    # SE RESUELVE EL NAMEERROR ASIGNANDO LA VARIABLE CORRECTA CORRESPONDIENTE AL FILTRADO LATERAL TRADICIONAL
+    # SE CORRIGE EL NAMEERROR DEFINIENDO EL MODULO ACTIVO DIRECTAMENTE DESDE LA NAVEGACIÓN SIDEBAR
     modulo_activo = opcion_sistema
     
     if modulo_activo == "MÓDULO I: ENERGIZACIÓN (ATA 24)":
